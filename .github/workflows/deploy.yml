@@ -57,28 +57,8 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          
-      - name: Wait for Lambda update
-        run: |
-          aws lambda wait function-updated \
-            --function-name "${{ matrix.lambda.function_name }}" \
-            --region ${{ secrets.AWS_REGION }}
 
-      - name: Attach Latest Shared Layer
-        run: |
-          LAYER_ARN=$(aws lambda list-layer-versions \
-            --layer-name "slack-bot-calendar-shared" \
-            --region ${{ secrets.AWS_REGION }} \
-            --query "LayerVersions[0].LayerVersionArn" \
-            --output text)
-
-          echo "Using Layer ARN: $LAYER_ARN"
-
-          aws lambda update-function-configuration \
-            --function-name "${{ matrix.lambda.function_name }}" \
-            --layers "$LAYER_ARN" \
-            --handler "handler.lambda_handler" \
-            --region ${{ secrets.AWS_REGION }}
+      
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
