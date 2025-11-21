@@ -1,8 +1,8 @@
 package com.udb.manager.model;
 
 public enum DatabaseType {
-    MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),
-    POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s"),
+    MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s?characterEncoding=UTF-8&useUnicode=true&serverTimezone=Asia/Tokyo"),
+    POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s?characterEncoding=UTF-8&useUnicode=true"),
     SQLITE("org.sqlite.JDBC", "jdbc:sqlite:%s"),
     ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@//%s:%d/%s"),
     SQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d;databaseName=%s;encrypt=true;trustServerCertificate=true"),
