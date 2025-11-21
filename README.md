@@ -229,6 +229,26 @@ duration = parse_duration("2時間30分")  # 150分
 ### 進行中
 - 🔄 インフラ構築（Terraform）
 
+## CI/CD
+
+このプロジェクトでは GitHub Actions を使用した自動化されたCI/CDパイプラインを実装しています。
+
+### CI Pipeline（自動実行）
+- ✅ コード品質チェック（flake8, black, isort）
+- ✅ 型チェック（mypy）
+- ✅ ユニットテスト + カバレッジ測定
+- ✅ セキュリティスキャン（bandit, safety）
+- ✅ Lambda デプロイパッケージのビルド
+- ✅ Terraform バリデーション
+
+### CD Pipeline（main ブランチへのプッシュ時）
+- 🚀 Terraform によるインフラデプロイ
+- 🚀 Lambda 関数の自動デプロイ
+- 🧪 統合テスト実行
+- 📢 Slack 通知
+
+詳細は [.github/workflows/README.md](.github/workflows/README.md) を参照してください。
+
 ### 予定
 - ⏳ インフラ構築（Terraform）
 - ⏳ DynamoDBテーブル作成

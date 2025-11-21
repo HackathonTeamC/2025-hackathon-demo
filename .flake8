@@ -1,0 +1,13 @@
+[flake8]
+max-line-length = 127
+exclude = 
+    .git,
+    __pycache__,
+    .venv,
+    venv,
+    dist,
+    build,
+    *.egg-info,
+    .terraform
+extend-ignore = E203, E501, W503
+max-complexity = 10
