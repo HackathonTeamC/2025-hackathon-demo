@@ -8,34 +8,29 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      lambda_matrix_base64: ${{ steps.set-matrix.outputs.lambda_matrix_base64 }}
+      lambda_matrix_json: ${{ steps.encode.outputs.lambda_matrix_json }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Find Lambda directories and generate matrix
-        id: set-matrix
+      - name: Find Lambda directories
+        id: find
         run: |
-          # lambdas 配下のディレクトリ名一覧を取得
           dirs=$(find src/lambdas -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
+          printf "%s\n" $dirs > dirs.txt
 
-          echo "Found dirs:"
-          printf "%s\n" $dirs
+      - name: Build JSON matrix
+        id: build
+        run: |
+          json=$(jq -R . dirs.txt | jq -s .)
+          echo "json=$json" >> $GITHUB_OUTPUT
 
-          # JSON 配列生成
-          json=$(printf "%s\n" $dirs | jq -R . | jq -s .)
-          echo "JSON:"
-          echo "$json"
-
-          # JSON を Base64 にエンコードして安定化
-          encoded=$(echo -n "$json" | base64 -w0)
-
-          echo "Encoded JSON:"
-          echo "$encoded"
-
-          # Output に安全に書き込み
-          echo "lambda_matrix_base64=$encoded" >> $GITHUB_OUTPUT
+      - name: Encode JSON to base64
+        id: encode
+        run: |
+          encoded=$(echo -n "${{ steps.build.outputs.json }}" | base64 -w0)
+          echo "lambda_matrix_json=$encoded" >> $GITHUB_OUTPUT
 
   deploy:
     needs: prepare
@@ -43,16 +38,16 @@ jobs:
 
     strategy:
       matrix:
-        function: ${{ fromJson( steps.decode.outputs.lambda_matrix ) }}
+        function: ${{ fromJson( format( '{0}', steps.decode.outputs.matrix_decoded ) ) }}
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Decode Base64 to JSON
+      - name: Decode Base64 JSON
         id: decode
         run: |
-          decoded=$(echo "${{ needs.prepare.outputs.lambda_matrix_base64 }}" | base64 -d)
-          echo "lambda_matrix=$decoded" >> $GITHUB_OUTPUT
+          decoded=$(echo "${{ needs.prepare.outputs.lambda_matrix_json }}" | base64 -d)
+          echo "matrix_decoded=$decoded" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-python@v4
         with:
