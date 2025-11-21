@@ -3,16 +3,18 @@ package com.udb.manager.controller;
 import com.udb.manager.dto.QueryRequestDTO;
 import com.udb.manager.dto.QueryResultDTO;
 import com.udb.manager.service.QueryExecutionService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/connections/{connectionId}")
-@RequiredArgsConstructor
 public class QueryExecutionController {
 
     private final QueryExecutionService queryService;
+
+    public QueryExecutionController(QueryExecutionService queryService) {
+        this.queryService = queryService;
+    }
 
     @PostMapping("/query")
     public ResponseEntity<QueryResultDTO> executeQuery(

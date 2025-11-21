@@ -3,8 +3,8 @@ package com.udb.manager.service;
 import com.udb.manager.dto.ColumnInfoDTO;
 import com.udb.manager.dto.TableInfoDTO;
 import com.udb.manager.exception.DatabaseConnectionException;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
@@ -14,11 +14,15 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class DatabaseMetadataService {
 
+    private static final Logger log = LoggerFactory.getLogger(DatabaseMetadataService.class);
+
     private final DatabaseConnectionService connectionService;
+
+    public DatabaseMetadataService(DatabaseConnectionService connectionService) {
+        this.connectionService = connectionService;
+    }
 
     public List<String> getSchemas(String connectionId) {
         List<String> schemas = new ArrayList<>();

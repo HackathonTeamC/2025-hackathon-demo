@@ -2,7 +2,6 @@ package com.udb.manager.controller;
 
 import com.udb.manager.dto.TableInfoDTO;
 import com.udb.manager.service.DatabaseMetadataService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,10 +9,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/connections/{connectionId}/metadata")
-@RequiredArgsConstructor
 public class DatabaseMetadataController {
 
     private final DatabaseMetadataService metadataService;
+
+    public DatabaseMetadataController(DatabaseMetadataService metadataService) {
+        this.metadataService = metadataService;
+    }
 
     @GetMapping("/schemas")
     public ResponseEntity<List<String>> getSchemas(@PathVariable String connectionId) {

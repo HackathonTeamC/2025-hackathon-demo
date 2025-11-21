@@ -3,7 +3,6 @@ package com.udb.manager.controller;
 import com.udb.manager.dto.ConnectionTestResultDTO;
 import com.udb.manager.dto.DatabaseConnectionDTO;
 import com.udb.manager.service.DatabaseConnectionService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,10 +11,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/connections")
-@RequiredArgsConstructor
 public class DatabaseConnectionController {
 
     private final DatabaseConnectionService connectionService;
+
+    public DatabaseConnectionController(DatabaseConnectionService connectionService) {
+        this.connectionService = connectionService;
+    }
 
     @PostMapping
     public ResponseEntity<DatabaseConnectionDTO> createConnection(@RequestBody DatabaseConnectionDTO dto) {
