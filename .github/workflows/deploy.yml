@@ -1,53 +1,27 @@
-name: Deploy All Lambda Functions
+name: Deploy Lambda Functions
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  prepare:
-    runs-on: ubuntu-latest
-    outputs:
-      lambda_matrix_json: ${{ steps.encode.outputs.lambda_matrix_json }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Find Lambda directories
-        id: find
-        run: |
-          dirs=$(find src/lambdas -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-          printf "%s\n" $dirs > dirs.txt
-
-      - name: Build JSON matrix
-        id: build
-        run: |
-          json=$(jq -R . dirs.txt | jq -s .)
-          echo "json=$json" >> $GITHUB_OUTPUT
-
-      - name: Encode JSON to base64
-        id: encode
-        run: |
-          encoded=$(echo -n "${{ steps.build.outputs.json }}" | base64 -w0)
-          echo "lambda_matrix_json=$encoded" >> $GITHUB_OUTPUT
-
   deploy:
-    needs: prepare
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        function: ${{ fromJson( format( '{0}', steps.decode.outputs.matrix_decoded ) ) }}
+        lambda:
+          - function_name: "conversation_analyzer"
+            folder: "conversation_analyzer"
+          - function_name: "reaction_handler"
+            folder: "reaction_handler"
+          - function_name: "schedule_creator"
+            folder: "schedule_creator"
+          - function_name: "scheduled_poster"
+            folder: "scheduled_poster"
 
     steps:
       - uses: actions/checkout@v3
-
-      - name: Decode Base64 JSON
-        id: decode
-        run: |
-          decoded=$(echo "${{ needs.prepare.outputs.lambda_matrix_json }}" | base64 -d)
-          echo "matrix_decoded=$decoded" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-python@v4
         with:
@@ -57,19 +31,19 @@ jobs:
         run: |
           pip install -r requirements.txt --target ./package
 
-      - name: Build ZIP
+      - name: Build Lambda ZIP for ${{ matrix.lambda.function_name }}
         run: |
           mkdir deploy
           cp -r package/* deploy/
-          cp -r src/lambdas/${{ matrix.function }}/* deploy/
+          cp -r src/lambdas/${{ matrix.lambda.folder }}/* deploy/
           cd deploy
-          zip -r ../${{ matrix.function }}.zip .
+          zip -r ../${{ matrix.lambda.function_name }}.zip .
 
-      - name: Deploy Lambda
+      - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
-            --function-name "${{ matrix.function }}" \
-            --zip-file fileb://${{ matrix.function }}.zip \
+            --function-name "${{ matrix.lambda.function_name }}" \
+            --zip-file fileb://${{ matrix.lambda.function_name }}.zip \
             --region ${{ secrets.AWS_REGION }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
