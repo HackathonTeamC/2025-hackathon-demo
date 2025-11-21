@@ -1,0 +1,16 @@
+# Slack SDK
+slack-bolt==1.18.0
+slack-sdk==3.26.0
+
+# Google Calendar API
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
+google-api-python-client==2.111.0
+
+# AWS SDK
+boto3==1.34.0
+botocore==1.34.0
+
+# Utilities
+pytz==2023.3
+python-dateutil==2.8.2
