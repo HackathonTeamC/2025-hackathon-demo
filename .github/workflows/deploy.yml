@@ -8,25 +8,31 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      lambda_matrix: ${{ steps.set-matrix.outputs.matrix }}
+      lambda_matrix: ${{ steps.compute-matrix.outputs.lambda_matrix }}
+
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Discover Lambda function directories
-        id: discover
+      - name: Compute matrix from directories
+        id: compute-matrix
+        shell: bash
         run: |
+          # lambdas 配下のディレクトリ名を取得
           dirs=$(find src/lambdas -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
-          
-          # JSON 配列に安全に変換
-          json=$(printf '%s\n' "${dirs}" | jq -R . | jq -s .)
 
-          echo "matrix=$json" >> $GITHUB_OUTPUT
+          echo "Found directories:"
+          printf "%s\n" $dirs
 
-      - name: Set matrix output
-        id: set-matrix
-        run: |
-          echo "matrix=${{ steps.discover.outputs.matrix }}" >> $GITHUB_OUTPUT
+          # JSON 配列化（安全）
+          json=$(printf "%s\n" $dirs | jq -R . | jq -s .)
+
+          echo "Generated JSON:"
+          echo "$json"
+
+          # GitHub Actions の output に書き込み（安全処理版）
+          json_escaped=$(echo "$json" | jq -Rs .)
+          echo "lambda_matrix=$json" >> $GITHUB_OUTPUT
 
   deploy:
     needs: prepare
@@ -37,11 +43,9 @@ jobs:
         function: ${{ fromJson(needs.prepare.outputs.lambda_matrix) }}
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
@@ -49,7 +53,7 @@ jobs:
         run: |
           pip install -r requirements.txt --target ./package
 
-      - name: Build deployment package
+      - name: Build zip for each Lambda
         run: |
           mkdir deploy
           cp -r package/* deploy/
