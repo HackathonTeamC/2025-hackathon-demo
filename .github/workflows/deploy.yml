@@ -1,0 +1,75 @@
+name: Deploy All Lambda Functions
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      lambda_matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Discover Lambda function directories
+        id: discover
+        run: |
+          dirs=$(ls -d src/lambdas/*/ | xargs -n1 basename)
+          echo "Found directories:"
+          echo "$dirs"
+          
+          # JSON 配列へ変換
+          json="["
+          for d in $dirs; do
+            json="${json}\"$d\","
+          done
+          json="${json%,}]"
+          
+          echo "Matrix JSON: $json"
+          echo "matrix=$json" >> $GITHUB_OUTPUT
+
+      - name: Set matrix output
+        id: set-matrix
+        run: echo "matrix=${{ steps.discover.outputs.matrix }}" >> $GITHUB_OUTPUT
+
+
+  deploy:
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        function: ${{ fromJson(needs.prepare.outputs.lambda_matrix) }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt --target ./package
+
+      - name: Build deployment package
+        run: |
+          mkdir deploy
+          cp -r package/* deploy/
+          cp -r src/lambdas/${{ matrix.function }}/* deploy/
+          cd deploy
+          zip -r ../${{ matrix.function }}.zip .
+
+      - name: Deploy Lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ matrix.function }}" \
+            --zip-file fileb://${{ matrix.function }}.zip \
+            --region ${{ secrets.AWS_REGION }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
