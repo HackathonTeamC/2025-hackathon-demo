@@ -93,6 +93,10 @@ public class DatabaseConnectionService {
             String jdbcUrl = dto.getDatabaseType().buildJdbcUrl(
                     dto.getHost(), dto.getPort(), dto.getDatabaseName());
             
+            log.info("Testing connection with URL: {}", jdbcUrl);
+            log.info("Username: {}", dto.getUsername());
+            log.info("Database Type: {}", dto.getDatabaseType());
+            
             Class.forName(dto.getDatabaseType().getDriverClassName());
             
             try (Connection conn = DriverManager.getConnection(
@@ -101,10 +105,12 @@ public class DatabaseConnectionService {
                 DatabaseMetaData metaData = conn.getMetaData();
                 String version = metaData.getDatabaseProductName() + " " + metaData.getDatabaseProductVersion();
                 
+                log.info("Connection successful to: {}", version);
                 return new ConnectionTestResultDTO(true, "Connection successful", version);
             }
         } catch (Exception e) {
-            log.error("Connection test failed", e);
+            log.error("Connection test failed with URL: {}", 
+                dto.getDatabaseType().buildJdbcUrl(dto.getHost(), dto.getPort(), dto.getDatabaseName()), e);
             return new ConnectionTestResultDTO(false, "Connection failed: " + e.getMessage(), null);
         }
     }
