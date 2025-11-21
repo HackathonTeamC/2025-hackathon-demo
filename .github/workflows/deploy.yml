@@ -3,6 +3,9 @@ name: Deploy Lambda Functions
 on:
   push:
     branches: [ main ]
+    paths:
+      - "src/lambdas/**"
+      - "!src/shared/**"  # shared 更新時は layer 側を実行する
 
 jobs:
   deploy:
@@ -31,19 +34,43 @@ jobs:
         run: |
           pip install -r requirements.txt --target ./package
 
-      - name: Build Lambda ZIP for ${{ matrix.lambda.function_name }}
+      - name: Build ZIP for ${{ matrix.lambda.function_name }}
         run: |
           mkdir deploy
+          
+          # pip install した依存
           cp -r package/* deploy/
+
+          # Lambda 個別コード（ハンドラ含む）
           cp -r src/lambdas/${{ matrix.lambda.folder }}/* deploy/
+
           cd deploy
           zip -r ../${{ matrix.lambda.function_name }}.zip .
 
-      - name: Deploy to AWS Lambda
+      - name: Deploy Lambda Code
         run: |
           aws lambda update-function-code \
             --function-name "${{ matrix.lambda.function_name }}" \
             --zip-file fileb://${{ matrix.lambda.function_name }}.zip \
+            --region ${{ secrets.AWS_REGION }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Attach Latest Shared Layer
+        run: |
+          LAYER_ARN=$(aws lambda list-layer-versions \
+            --layer-name "slack-bot-calendar-shared" \
+            --region ${{ secrets.AWS_REGION }} \
+            --query "LayerVersions[0].LayerVersionArn" \
+            --output text)
+
+          echo "Using Layer ARN: $LAYER_ARN"
+
+          aws lambda update-function-configuration \
+            --function-name "${{ matrix.lambda.function_name }}" \
+            --layers "$LAYER_ARN" \
+            --handler "handler.lambda_handler" \
             --region ${{ secrets.AWS_REGION }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

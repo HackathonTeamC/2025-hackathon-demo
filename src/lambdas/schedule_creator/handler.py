@@ -11,7 +11,6 @@ import sys
 from datetime import datetime, timedelta
 
 # 共通モジュールをインポート
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from shared.slack_client import SlackClient
 from shared.block_builder import BlockBuilder
 from shared.calendar_client import CalendarClient

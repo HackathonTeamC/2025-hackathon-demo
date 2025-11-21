@@ -13,7 +13,6 @@ from collections import Counter
 import re
 
 # 共通モジュールをインポート
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from shared.slack_client import SlackClient
 from shared.database import DynamoDBClient
 from shared.models import Conversation
