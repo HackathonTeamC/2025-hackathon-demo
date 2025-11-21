@@ -13,7 +13,6 @@ from datetime import datetime, timedelta
 import uuid
 
 # 共通モジュールをインポート
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 from shared.slack_client import SlackClient
 from shared.block_builder import BlockBuilder
 from shared.database import DynamoDBClient

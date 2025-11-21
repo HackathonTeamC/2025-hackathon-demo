@@ -1,0 +1,32 @@
+name: Deploy Shared Layer
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "src/shared/**"
+
+jobs:
+  layer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Layer ZIP
+        run: |
+          mkdir -p layer/python/shared
+          cp -r src/shared/* layer/python/shared/
+          cd layer
+          zip -r ../shared_layer.zip .
+
+      - name: Publish Layer
+        run: |
+          aws lambda publish-layer-version \
+            --layer-name "slack-bot-calendar-shared" \
+            --zip-file fileb://shared_layer.zip \
+            --compatible-runtimes python3.11 \
+            --region ${{ secrets.AWS_REGION }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
