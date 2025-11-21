@@ -16,24 +16,17 @@ jobs:
       - name: Discover Lambda function directories
         id: discover
         run: |
-          dirs=$(ls -d src/lambdas/*/ | xargs -n1 basename)
-          echo "Found directories:"
-          echo "$dirs"
+          dirs=$(find src/lambdas -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
           
-          # JSON 配列へ変換
-          json="["
-          for d in $dirs; do
-            json="${json}\"$d\","
-          done
-          json="${json%,}]"
-          
-          echo "Matrix JSON: $json"
+          # JSON 配列に安全に変換
+          json=$(printf '%s\n' "${dirs}" | jq -R . | jq -s .)
+
           echo "matrix=$json" >> $GITHUB_OUTPUT
 
       - name: Set matrix output
         id: set-matrix
-        run: echo "matrix=${{ steps.discover.outputs.matrix }}" >> $GITHUB_OUTPUT
-
+        run: |
+          echo "matrix=${{ steps.discover.outputs.matrix }}" >> $GITHUB_OUTPUT
 
   deploy:
     needs: prepare
