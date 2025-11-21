@@ -8,31 +8,34 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      lambda_matrix: ${{ steps.compute-matrix.outputs.lambda_matrix }}
+      lambda_matrix_base64: ${{ steps.set-matrix.outputs.lambda_matrix_base64 }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Compute matrix from directories
-        id: compute-matrix
-        shell: bash
+      - name: Find Lambda directories and generate matrix
+        id: set-matrix
         run: |
-          # lambdas 配下のディレクトリ名を取得
+          # lambdas 配下のディレクトリ名一覧を取得
           dirs=$(find src/lambdas -mindepth 1 -maxdepth 1 -type d -exec basename {} \;)
 
-          echo "Found directories:"
+          echo "Found dirs:"
           printf "%s\n" $dirs
 
-          # JSON 配列化（安全）
+          # JSON 配列生成
           json=$(printf "%s\n" $dirs | jq -R . | jq -s .)
-
-          echo "Generated JSON:"
+          echo "JSON:"
           echo "$json"
 
-          # GitHub Actions の output に書き込み（安全処理版）
-          json_escaped=$(echo "$json" | jq -Rs .)
-          echo "lambda_matrix=$json" >> $GITHUB_OUTPUT
+          # JSON を Base64 にエンコードして安定化
+          encoded=$(echo -n "$json" | base64 -w0)
+
+          echo "Encoded JSON:"
+          echo "$encoded"
+
+          # Output に安全に書き込み
+          echo "lambda_matrix_base64=$encoded" >> $GITHUB_OUTPUT
 
   deploy:
     needs: prepare
@@ -40,10 +43,16 @@ jobs:
 
     strategy:
       matrix:
-        function: ${{ fromJson(needs.prepare.outputs.lambda_matrix) }}
+        function: ${{ fromJson( steps.decode.outputs.lambda_matrix ) }}
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Decode Base64 to JSON
+        id: decode
+        run: |
+          decoded=$(echo "${{ needs.prepare.outputs.lambda_matrix_base64 }}" | base64 -d)
+          echo "lambda_matrix=$decoded" >> $GITHUB_OUTPUT
 
       - uses: actions/setup-python@v4
         with:
@@ -53,7 +62,7 @@ jobs:
         run: |
           pip install -r requirements.txt --target ./package
 
-      - name: Build zip for each Lambda
+      - name: Build ZIP
         run: |
           mkdir deploy
           cp -r package/* deploy/
