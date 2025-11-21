@@ -56,6 +56,30 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- SQL Server Driver -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- SQLite Driver -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.44.1.0</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Oracle Driver (optional - requires manual installation) -->
+        <!-- 
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc8</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        -->
+
 
 
         <!-- Spring Boot Starter Test -->
