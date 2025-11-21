@@ -23,6 +23,38 @@ Slackワークスペース内でbotを通じて会話を促進し、その反応
 - **Google API**: google-api-python-client
 - **IaC**: Terraform
 
+## Lambda関数
+
+### 1. scheduled_poster
+**トリガー**: EventBridge（平日 10:00, 15:00 JST）
+**機能**:
+- ランダムに話題を選択してSlackに投稿
+- メンバーへのランダム質問を投稿
+- 話題の使用履歴をDynamoDBに記録
+
+### 2. reaction_handler
+**トリガー**: Slack Events API（reaction_added）
+**機能**:
+- リアクション追加イベントを処理
+- リアクション数をカウントし、閾値（デフォルト3件）を超えたらミーティング提案
+- EventTrackingステータスを更新
+
+### 3. schedule_creator
+**トリガー**: Slack Events API（message）/ 手動
+**機能**:
+- ユーザーとの対話で日程を調整
+- 日本語の日時表現を解析
+- Googleカレンダーにイベント作成
+- 参加者にメール招待を送信
+
+### 4. conversation_analyzer
+**トリガー**: EventBridge（日次実行推奨）
+**機能**:
+- チャンネルの会話履歴を分析
+- キーワード抽出と感情分析
+- 興味深い会話をConversationテーブルに保存
+- トップキーワードを集計
+
 ## ディレクトリ構造
 
 ```
@@ -186,9 +218,16 @@ duration = parse_duration("2時間30分")  # 150分
 - ✅ Block Builder 共通モジュール実装
 - ✅ Calendar Client 共通モジュール実装
 - ✅ Calendar Utils 実装（日時解析・フォーマット）
+- ✅ Database Client 実装（DynamoDB操作）
+- ✅ Data Models 実装（Topic, Conversation, EventTracking, Question）
+- ✅ Lambda関数実装
+  - scheduled_poster: 定期話題投稿
+  - reaction_handler: リアクション処理
+  - schedule_creator: スケジュール作成
+  - conversation_analyzer: 会話履歴分析
 
 ### 進行中
-- 🔄 Lambda関数の実装
+- 🔄 インフラ構築（Terraform）
 
 ### 予定
 - ⏳ インフラ構築（Terraform）
