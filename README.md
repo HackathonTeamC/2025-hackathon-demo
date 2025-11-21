@@ -118,6 +118,50 @@ client.post_message(
 )
 ```
 
+### Calendar Client
+
+```python
+from src.shared.calendar_client import CalendarClient
+from src.shared.calendar_utils import calculate_end_time
+from datetime import datetime, timedelta
+
+# クライアントの初期化
+calendar = CalendarClient()
+
+# イベント作成
+start = datetime.now() + timedelta(days=7)
+end = calculate_end_time(start, 120)  # 2時間後
+
+event = calendar.create_event(
+    summary='チームミーティング',
+    start_time=start,
+    end_time=end,
+    description='週次定例会議',
+    location='https://meet.google.com/xxx-yyyy-zzz',
+    attendees=['user1@example.com', 'user2@example.com']
+)
+
+print(f"Event created: {event['html_link']}")
+```
+
+### Calendar Utils
+
+```python
+from src.shared.calendar_utils import (
+    parse_japanese_datetime,
+    format_datetime_japanese,
+    parse_duration
+)
+
+# 日本語日時のパース
+dt = parse_japanese_datetime("12/5 14:00")
+formatted = format_datetime_japanese(dt)
+print(formatted)  # "2025年12月5日(木) 14:00"
+
+# 所要時間のパース
+duration = parse_duration("2時間30分")  # 150分
+```
+
 ## 実装タスクの実施
 
 実装は以下の順序で進めてください：
@@ -140,6 +184,8 @@ client.post_message(
 - ✅ タスク分割と詳細設計
 - ✅ Slack Client 共通モジュール実装
 - ✅ Block Builder 共通モジュール実装
+- ✅ Calendar Client 共通モジュール実装
+- ✅ Calendar Utils 実装（日時解析・フォーマット）
 
 ### 進行中
 - 🔄 Lambda関数の実装
