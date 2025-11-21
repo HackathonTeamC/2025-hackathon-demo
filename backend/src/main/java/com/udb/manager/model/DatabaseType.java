@@ -4,7 +4,7 @@ public enum DatabaseType {
     MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://%s:%d/%s"),
     POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://%s:%d/%s"),
     SQLITE("org.sqlite.JDBC", "jdbc:sqlite:%s"),
-    ORACLE("oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@%s:%d:%s"),
+    ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@%s:%d:%s"),
     SQLSERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://%s:%d;databaseName=%s;encrypt=true;trustServerCertificate=true"),
     MONGODB("mongodb.jdbc.MongoDriver", "mongodb://%s:%d/%s"),
     SNOWFLAKE("net.snowflake.client.jdbc.SnowflakeDriver", "jdbc:snowflake://%s"),

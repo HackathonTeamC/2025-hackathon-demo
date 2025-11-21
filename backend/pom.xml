@@ -71,14 +71,13 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Oracle Driver (optional - requires manual installation) -->
-        <!-- 
+        <!-- Oracle Driver -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
             <artifactId>ojdbc8</artifactId>
+            <version>21.9.0.0</version>
             <scope>runtime</scope>
         </dependency>
-        -->
 
 
 
