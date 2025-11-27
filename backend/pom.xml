@@ -82,6 +82,13 @@
             <scope>runtime</scope>
         </dependency>
         
+        <!-- Salesforce REST API -->
+        <dependency>
+            <groupId>com.force.api</groupId>
+            <artifactId>force-rest-api</artifactId>
+            <version>0.0.44</version>
+        </dependency>
+        
         <!-- HikariCP Connection Pool -->
         <dependency>
             <groupId>com.zaxxer</groupId>

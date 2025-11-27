@@ -9,7 +9,8 @@ public enum DatabaseType {
     SQLITE("org.sqlite.JDBC", "jdbc:sqlite:"),
     H2("org.h2.Driver", "jdbc:h2:"),
     ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@"),
-    SQL_SERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://");
+    SQL_SERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://"),
+    SALESFORCE(null, null); // Salesforce uses REST API, not JDBC
 
     private final String driverClassName;
     private final String urlPrefix;
@@ -25,5 +26,9 @@ public enum DatabaseType {
 
     public String getUrlPrefix() {
         return urlPrefix;
+    }
+    
+    public boolean isJdbc() {
+        return this != SALESFORCE;
     }
 }

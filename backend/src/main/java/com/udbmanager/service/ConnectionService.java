@@ -25,6 +25,7 @@ public class ConnectionService {
 
     private final DatabaseConnectionRepository connectionRepository;
     private final DatabaseConnectionManager connectionManager;
+    private final SalesforceConnectionManager salesforceConnectionManager;
     private final EncryptionUtil encryptionUtil;
     private final ConnectionMapper connectionMapper;
 
@@ -138,7 +139,12 @@ public class ConnectionService {
 
     private ConnectionTestResult testConnectionInternal(DatabaseConnection connection, String password) {
         try {
-            connectionManager.testConnection(connection, password);
+            // Check if Salesforce
+            if (connection.getDatabaseType() == com.udbmanager.model.DatabaseType.SALESFORCE) {
+                salesforceConnectionManager.testConnection(connection, password);
+            } else {
+                connectionManager.testConnection(connection, password);
+            }
             return ConnectionTestResult.success();
         } catch (SQLException e) {
             log.error("Connection test failed", e);

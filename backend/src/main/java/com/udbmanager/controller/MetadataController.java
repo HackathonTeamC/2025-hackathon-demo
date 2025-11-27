@@ -15,6 +15,8 @@ import java.util.List;
 public class MetadataController {
 
     private final MetadataService metadataService;
+    private final com.udbmanager.service.SalesforceMetadataService salesforceMetadataService;
+    private final com.udbmanager.service.ConnectionService connectionService;
 
     @GetMapping("/schemas")
     public ResponseEntity<List<String>> getSchemas(@PathVariable String connectionId) {
@@ -23,6 +25,10 @@ public class MetadataController {
 
     @GetMapping("/tables")
     public ResponseEntity<List<TableInfo>> getAllTables(@PathVariable String connectionId) {
+        com.udbmanager.model.DatabaseConnection connection = connectionService.getConnection(connectionId);
+        if (connection.getDatabaseType() == com.udbmanager.model.DatabaseType.SALESFORCE) {
+            return ResponseEntity.ok(salesforceMetadataService.getSalesforceObjects(connectionId));
+        }
         return ResponseEntity.ok(metadataService.getAllTables(connectionId));
     }
 
@@ -38,6 +44,10 @@ public class MetadataController {
             @PathVariable String connectionId,
             @PathVariable String tableName,
             @RequestParam(required = false) String schemaName) {
+        com.udbmanager.model.DatabaseConnection connection = connectionService.getConnection(connectionId);
+        if (connection.getDatabaseType() == com.udbmanager.model.DatabaseType.SALESFORCE) {
+            return ResponseEntity.ok(salesforceMetadataService.getSalesforceFields(connectionId, tableName));
+        }
         return ResponseEntity.ok(metadataService.getColumns(connectionId, schemaName, tableName));
     }
 }

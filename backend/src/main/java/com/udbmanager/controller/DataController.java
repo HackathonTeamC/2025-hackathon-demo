@@ -15,6 +15,8 @@ import java.util.Map;
 public class DataController {
 
     private final DataService dataService;
+    private final com.udbmanager.service.SalesforceDataService salesforceDataService;
+    private final com.udbmanager.service.ConnectionService connectionService;
 
     @PostMapping("/tables/{tableName}")
     public ResponseEntity<DataQueryResponse> getTableData(
@@ -22,6 +24,10 @@ public class DataController {
             @PathVariable String tableName,
             @RequestParam(required = false) String schemaName,
             @RequestBody DataQueryRequest request) {
+        com.udbmanager.model.DatabaseConnection connection = connectionService.getConnection(connectionId);
+        if (connection.getDatabaseType() == com.udbmanager.model.DatabaseType.SALESFORCE) {
+            return ResponseEntity.ok(salesforceDataService.getSalesforceObjectData(connectionId, tableName, request));
+        }
         return ResponseEntity.ok(dataService.getTableData(connectionId, schemaName, tableName, request));
     }
 
