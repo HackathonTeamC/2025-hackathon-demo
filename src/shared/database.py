@@ -82,17 +82,27 @@ class DynamoDBClient:
             List[Dict]: 話題リスト
         """
         try:
-            scan_kwargs = {}
-            
+            # categoryが指定されている場合はGSIを使って効率的にクエリ
             if category:
-                scan_kwargs['FilterExpression'] = 'category = :cat'
-                scan_kwargs['ExpressionAttributeValues'] = {':cat': category}
-            
-            if limit:
-                scan_kwargs['Limit'] = limit
-            
-            response = self.topics_table.scan(**scan_kwargs)
-            return response.get('Items', [])
+                query_kwargs = {
+                    'IndexName': 'CategoryIndex',
+                    'KeyConditionExpression': 'category = :cat',
+                    'ExpressionAttributeValues': {':cat': category},
+                    'ScanIndexForward': False  # 降順（新しい順）
+                }
+                if limit:
+                    query_kwargs['Limit'] = limit
+                
+                response = self.topics_table.query(**query_kwargs)
+                return response.get('Items', [])
+            else:
+                # categoryが指定されていない場合はscan
+                scan_kwargs = {}
+                if limit:
+                    scan_kwargs['Limit'] = limit
+                
+                response = self.topics_table.scan(**scan_kwargs)
+                return response.get('Items', [])
         except Exception as e:
             print(f"Error scanning topics: {e}")
             return []
@@ -175,7 +185,7 @@ class DynamoDBClient:
         """
         try:
             response = self.conversations_table.query(
-                IndexName='channel_id-index',
+                IndexName='ChannelTimeIndex',
                 KeyConditionExpression='channel_id = :channel',
                 ExpressionAttributeValues={':channel': channel_id},
                 Limit=limit,
@@ -231,9 +241,12 @@ class DynamoDBClient:
             Optional[Dict]: イベントデータ
         """
         try:
+            # MessageIndexはslack_message_tsのみをHASHキーとして持つ
+            # channel_idはFilterExpressionでフィルタリング
             response = self.events_table.query(
-                IndexName='slack_message_ts-index',
-                KeyConditionExpression='slack_message_ts = :ts AND channel_id = :channel',
+                IndexName='MessageIndex',
+                KeyConditionExpression='slack_message_ts = :ts',
+                FilterExpression='channel_id = :channel',
                 ExpressionAttributeValues={
                     ':ts': slack_message_ts,
                     ':channel': channel_id
@@ -362,9 +375,8 @@ class DynamoDBClient:
             cutoff_date = (datetime.utcnow() - timedelta(days=days)).isoformat()
             
             response = self.questions_table.query(
-                IndexName='user_id-index',
-                KeyConditionExpression='user_id = :user',
-                FilterExpression='asked_at > :cutoff',
+                IndexName='UserTimeIndex',
+                KeyConditionExpression='user_id = :user AND asked_at > :cutoff',
                 ExpressionAttributeValues={
                     ':user': user_id,
                     ':cutoff': cutoff_date
