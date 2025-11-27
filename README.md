@@ -62,24 +62,55 @@ cd udb-manager
 ```
 
 ### 2. バックエンドの起動
+
+**Linux/Mac の場合:**
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-または Windows の場合:
+または起動スクリプトを使用:
+```bash
+./start-backend.sh
+```
+
+**Windows の場合:**
 ```bash
 cd backend
 mvnw.cmd spring-boot:run
 ```
 
+または起動スクリプトを使用:
+```bash
+start-backend.bat
+```
+
 バックエンドは `http://localhost:8080` で起動します。
 
 ### 3. フロントエンドの起動（別ターミナル）
+
+**Linux/Mac の場合:**
 ```bash
 cd frontend
 npm install
 npm start
+```
+
+または起動スクリプトを使用:
+```bash
+./start-frontend.sh
+```
+
+**Windows の場合:**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+または起動スクリプトを使用:
+```bash
+start-frontend.bat
 ```
 
 フロントエンドは `http://localhost:3000` で起動します。

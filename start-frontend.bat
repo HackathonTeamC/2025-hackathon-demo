@@ -1,0 +1,6 @@
+@echo off
+echo Installing dependencies...
+cd frontend
+call npm install
+echo Starting UDB Manager Frontend...
+call npm start
