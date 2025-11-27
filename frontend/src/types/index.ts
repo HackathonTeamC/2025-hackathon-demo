@@ -5,7 +5,8 @@ export enum DatabaseType {
   SQLITE = 'SQLITE',
   H2 = 'H2',
   ORACLE = 'ORACLE',
-  SQL_SERVER = 'SQL_SERVER'
+  SQL_SERVER = 'SQL_SERVER',
+  SALESFORCE = 'SALESFORCE'
 }
 
 // Connection Types

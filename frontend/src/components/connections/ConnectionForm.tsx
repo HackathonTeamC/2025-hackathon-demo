@@ -64,7 +64,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
       [DatabaseType.SQLITE]: 0,
       [DatabaseType.H2]: 9092,
       [DatabaseType.ORACLE]: 1521,
-      [DatabaseType.SQL_SERVER]: 1433
+      [DatabaseType.SQL_SERVER]: 1433,
+      [DatabaseType.SALESFORCE]: 443
     };
     
     if (!connection) {
@@ -167,6 +168,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
           <MenuItem value={DatabaseType.H2}>H2</MenuItem>
           <MenuItem value={DatabaseType.ORACLE}>Oracle Database</MenuItem>
           <MenuItem value={DatabaseType.SQL_SERVER}>Microsoft SQL Server</MenuItem>
+          <MenuItem value={DatabaseType.SALESFORCE}>Salesforce</MenuItem>
         </Select>
       </FormControl>
 
