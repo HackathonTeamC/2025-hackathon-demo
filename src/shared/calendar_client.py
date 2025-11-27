@@ -115,12 +115,11 @@ class CalendarClient:
             },
         }
         
-        # 参加者追加
+        # 参加者情報をdescriptionに含める
         if attendees:
-            event['attendees'] = [{'email': email} for email in attendees if email]
-            event['guestsCanModify'] = False
-            event['guestsCanInviteOthers'] = False
-            event['guestsCanSeeOtherGuests'] = True
+            attendee_list = '\n'.join([f"- {email}" for email in attendees if email])
+            description = f"{description}\n\n参加者:\n{attendee_list}\n\n※カレンダーに手動で追加してください。"
+
         
         try:
             # サービスアカウントは招待メールを送れないため、sendUpdates='none'にする
@@ -129,17 +128,6 @@ class CalendarClient:
                 body=event,
                 sendUpdates='none'  # ✅ 'all' → 'none' に変更
             ).execute()
-
-            # 参加者のメールアドレスをdescriptionに追加（手動で追加できるように）
-            if attendees:
-                attendee_list = '\n'.join([f"- {email}" for email in attendees])
-                updated_description = f"{description}\n\n参加者:\n{attendee_list}\n\n※カレンダーに手動で追加してください。"
-                # イベントを更新してdescriptionに参加者情報を追加
-                self.service.events().patch(
-                    calendarId=self.calendar_id,
-                    eventId=created_event['id'],
-                    body={'description': updated_description}
-                ).execute()
             
             return {
                 'id': created_event['id'],
