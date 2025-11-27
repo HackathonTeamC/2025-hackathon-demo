@@ -82,9 +82,14 @@ public class DatabaseConnectionManager {
             case ORACLE:
                 // jdbc:oracle:thin:@host:port:sid or jdbc:oracle:thin:@host:port/service_name
                 // If databaseName starts with '/', use Service Name format, otherwise use SID format
+                Integer oraclePort = dbConnection.getPort();
+                if (oraclePort == null || oraclePort == 0) {
+                    oraclePort = 1521; // Default Oracle port
+                }
+                
                 url.append(dbConnection.getHost())
                    .append(":")
-                   .append(dbConnection.getPort());
+                   .append(oraclePort);
                 
                 String dbName = dbConnection.getDatabaseName();
                 if (dbName.startsWith("/")) {
@@ -102,9 +107,14 @@ public class DatabaseConnectionManager {
                 
             case SQL_SERVER:
                 // jdbc:sqlserver://host:port;databaseName=dbname
+                Integer sqlServerPort = dbConnection.getPort();
+                if (sqlServerPort == null || sqlServerPort == 0) {
+                    sqlServerPort = 1433; // Default SQL Server port
+                }
+                
                 url.append(dbConnection.getHost())
                    .append(":")
-                   .append(dbConnection.getPort())
+                   .append(sqlServerPort)
                    .append(";databaseName=")
                    .append(dbConnection.getDatabaseName());
                 
@@ -125,9 +135,21 @@ public class DatabaseConnectionManager {
             default:
                 // MySQL, PostgreSQL and other standard databases
                 // jdbc:mysql://host:port/database or jdbc:postgresql://host:port/database
+                Integer defaultPort = dbConnection.getPort();
+                if (defaultPort == null || defaultPort == 0) {
+                    // Set default port based on database type
+                    if (dbType == DatabaseType.MYSQL) {
+                        defaultPort = 3306;
+                    } else if (dbType == DatabaseType.POSTGRESQL) {
+                        defaultPort = 5432;
+                    } else {
+                        defaultPort = 5432; // Fallback to PostgreSQL default
+                    }
+                }
+                
                 url.append(dbConnection.getHost())
                    .append(":")
-                   .append(dbConnection.getPort())
+                   .append(defaultPort)
                    .append("/")
                    .append(dbConnection.getDatabaseName());
                 
