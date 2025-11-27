@@ -123,11 +123,23 @@ class CalendarClient:
             event['guestsCanSeeOtherGuests'] = True
         
         try:
+            # サービスアカウントは招待メールを送れないため、sendUpdates='none'にする
             created_event = self.service.events().insert(
                 calendarId=self.calendar_id,
                 body=event,
-                sendUpdates='all'  # 招待メールを送信
+                sendUpdates='none'  # ✅ 'all' → 'none' に変更
             ).execute()
+
+            # 参加者のメールアドレスをdescriptionに追加（手動で追加できるように）
+            if attendees:
+                attendee_list = '\n'.join([f"- {email}" for email in attendees])
+                updated_description = f"{description}\n\n参加者:\n{attendee_list}\n\n※カレンダーに手動で追加してください。"
+                # イベントを更新してdescriptionに参加者情報を追加
+                self.service.events().patch(
+                    calendarId=self.calendar_id,
+                    eventId=created_event['id'],
+                    body={'description': updated_description}
+                ).execute()
             
             return {
                 'id': created_event['id'],
