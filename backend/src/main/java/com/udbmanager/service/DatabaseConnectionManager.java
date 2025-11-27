@@ -101,7 +101,12 @@ public class DatabaseConnectionManager {
                    .append(dbConnection.getDatabaseName());
                 
                 if (dbConnection.getSslEnabled()) {
-                    url.append(";encrypt=true;trustServerCertificate=false");
+                    // For production with valid SSL certificates, set trustServerCertificate=false
+                    // For development/self-signed certificates, use trustServerCertificate=true
+                    url.append(";encrypt=true;trustServerCertificate=true");
+                } else {
+                    // For non-SSL connections
+                    url.append(";encrypt=false");
                 }
                 
                 if (dbConnection.getConnectionOptions() != null && !dbConnection.getConnectionOptions().isEmpty()) {
