@@ -52,7 +52,12 @@ public class DatabaseConnectionManager {
         config.setIdleTimeout(600000);
         config.setMaxLifetime(1800000);
         config.setPoolName("UDB-Pool-" + dbConnection.getConnectionName());
-        config.setConnectionTestQuery("SELECT 1");
+        
+        // Set database-specific connection test query
+        String testQuery = getConnectionTestQuery(dbType);
+        if (testQuery != null) {
+            config.setConnectionTestQuery(testQuery);
+        }
         
         try {
             return new HikariDataSource(config);
@@ -204,5 +209,24 @@ public class DatabaseConnectionManager {
     public Connection getConnection(DatabaseConnection dbConnection, String decryptedPassword) throws SQLException {
         DataSource dataSource = getDataSource(dbConnection, decryptedPassword);
         return dataSource.getConnection();
+    }
+
+    /**
+     * Get database-specific connection test query
+     * Oracle requires "FROM DUAL", while other databases work with "SELECT 1"
+     */
+    private String getConnectionTestQuery(DatabaseType dbType) {
+        switch (dbType) {
+            case ORACLE:
+                return "SELECT 1 FROM DUAL";
+            case MYSQL:
+            case POSTGRESQL:
+            case SQLITE:
+            case H2:
+            case SQL_SERVER:
+                return "SELECT 1";
+            default:
+                return null; // Let HikariCP use its default
+        }
     }
 }
