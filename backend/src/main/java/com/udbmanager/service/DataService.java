@@ -23,7 +23,7 @@ public class DataService {
         DatabaseConnection dbConnection = connectionService.getConnection(connectionId);
         String decryptedPassword = connectionService.getDecryptedPassword(dbConnection);
         
-        String fullTableName = buildFullTableName(schemaName, tableName);
+        String fullTableName = buildFullTableName(schemaName, tableName, dbConnection.getDatabaseType());
         
         try (Connection connection = connectionManager.getConnection(dbConnection, decryptedPassword)) {
             StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ").append(fullTableName);
@@ -129,7 +129,7 @@ public class DataService {
         DatabaseConnection dbConnection = connectionService.getConnection(connectionId);
         String decryptedPassword = connectionService.getDecryptedPassword(dbConnection);
         
-        String fullTableName = buildFullTableName(schemaName, tableName);
+        String fullTableName = buildFullTableName(schemaName, tableName, dbConnection.getDatabaseType());
         
         try (Connection connection = connectionManager.getConnection(dbConnection, decryptedPassword)) {
             StringBuilder query = new StringBuilder("INSERT INTO ").append(fullTableName).append(" (");
@@ -169,7 +169,7 @@ public class DataService {
         DatabaseConnection dbConnection = connectionService.getConnection(connectionId);
         String decryptedPassword = connectionService.getDecryptedPassword(dbConnection);
         
-        String fullTableName = buildFullTableName(schemaName, tableName);
+        String fullTableName = buildFullTableName(schemaName, tableName, dbConnection.getDatabaseType());
         
         try (Connection connection = connectionManager.getConnection(dbConnection, decryptedPassword)) {
             StringBuilder query = new StringBuilder("UPDATE ").append(fullTableName).append(" SET ");
@@ -217,7 +217,7 @@ public class DataService {
         DatabaseConnection dbConnection = connectionService.getConnection(connectionId);
         String decryptedPassword = connectionService.getDecryptedPassword(dbConnection);
         
-        String fullTableName = buildFullTableName(schemaName, tableName);
+        String fullTableName = buildFullTableName(schemaName, tableName, dbConnection.getDatabaseType());
         
         try (Connection connection = connectionManager.getConnection(dbConnection, decryptedPassword)) {
             StringBuilder query = new StringBuilder("DELETE FROM ").append(fullTableName).append(" WHERE ");
@@ -248,11 +248,40 @@ public class DataService {
         }
     }
 
-    private String buildFullTableName(String schemaName, String tableName) {
+    private String buildFullTableName(String schemaName, String tableName, com.udbmanager.model.DatabaseType dbType) {
+        // Quote identifiers to handle case-sensitive names and special characters
+        String quotedTable = quoteIdentifier(tableName, dbType);
+        
         if (schemaName != null && !schemaName.isEmpty()) {
-            return schemaName + "." + tableName;
+            String quotedSchema = quoteIdentifier(schemaName, dbType);
+            return quotedSchema + "." + quotedTable;
         }
-        return tableName;
+        return quotedTable;
+    }
+
+    /**
+     * Quote identifier based on database type
+     */
+    private String quoteIdentifier(String identifier, com.udbmanager.model.DatabaseType dbType) {
+        if (identifier == null || identifier.isEmpty()) {
+            return identifier;
+        }
+        
+        switch (dbType) {
+            case MYSQL:
+                // MySQL uses backticks
+                return "`" + identifier.replace("`", "``") + "`";
+            case SQL_SERVER:
+                // SQL Server uses square brackets
+                return "[" + identifier.replace("]", "]]") + "]";
+            case POSTGRESQL:
+            case ORACLE:
+            case SQLITE:
+            case H2:
+            default:
+                // Standard SQL uses double quotes
+                return "\"" + identifier.replace("\"", "\"\"") + "\"";
+        }
     }
 
     /**
