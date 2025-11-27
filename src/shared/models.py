@@ -29,8 +29,13 @@ class Topic:
         return cls(**data)
     
     def to_dict(self) -> dict:
-        """辞書に変換"""
-        return asdict(self)
+        """辞書に変換（DynamoDB対応）"""
+        from decimal import Decimal
+        data = asdict(self)
+        # float型をDecimal型に変換
+        if 'average_reactions' in data and isinstance(data['average_reactions'], float):
+            data['average_reactions'] = Decimal(str(data['average_reactions']))
+        return data
     
     @staticmethod
     def generate_id() -> str:
