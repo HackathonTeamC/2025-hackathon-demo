@@ -76,7 +76,7 @@ public class MetadataService {
                     table.setTableName(rs.getString("TABLE_NAME"));
                     table.setTableType(rs.getString("TABLE_TYPE"));
                     table.setRemarks(rs.getString("REMARKS"));
-                    table.setRowCount(getTableRowCount(connection, table.getSchemaName(), table.getTableName()));
+                    table.setRowCount(getTableRowCount(connection, table.getSchemaName(), table.getTableName(), dbConnection.getDatabaseType()));
                     tables.add(table);
                 }
             }
@@ -113,7 +113,7 @@ public class MetadataService {
                     table.setTableName(tableName);
                     table.setTableType(rs.getString("TABLE_TYPE"));
                     table.setRemarks(rs.getString("REMARKS"));
-                    table.setRowCount(getTableRowCount(connection, schemaName, tableName));
+                    table.setRowCount(getTableRowCount(connection, schemaName, tableName, dbConnection.getDatabaseType()));
                     tables.add(table);
                 }
             }
@@ -169,10 +169,8 @@ public class MetadataService {
         return columns;
     }
 
-    private Long getTableRowCount(Connection connection, String schemaName, String tableName) {
-        String fullTableName = (schemaName != null && !schemaName.isEmpty()) 
-            ? schemaName + "." + tableName 
-            : tableName;
+    private Long getTableRowCount(Connection connection, String schemaName, String tableName, com.udbmanager.model.DatabaseType dbType) {
+        String fullTableName = buildFullTableName(schemaName, tableName, dbType);
         
         String query = "SELECT COUNT(*) FROM " + fullTableName;
         
@@ -186,6 +184,35 @@ public class MetadataService {
         }
         
         return null;
+    }
+
+    private String buildFullTableName(String schemaName, String tableName, com.udbmanager.model.DatabaseType dbType) {
+        String quotedTable = quoteIdentifier(tableName, dbType);
+        
+        if (schemaName != null && !schemaName.isEmpty()) {
+            String quotedSchema = quoteIdentifier(schemaName, dbType);
+            return quotedSchema + "." + quotedTable;
+        }
+        return quotedTable;
+    }
+
+    private String quoteIdentifier(String identifier, com.udbmanager.model.DatabaseType dbType) {
+        if (identifier == null || identifier.isEmpty()) {
+            return identifier;
+        }
+        
+        switch (dbType) {
+            case MYSQL:
+                return "`" + identifier.replace("`", "``") + "`";
+            case SQL_SERVER:
+                return "[" + identifier.replace("]", "]]") + "]";
+            case POSTGRESQL:
+            case ORACLE:
+            case SQLITE:
+            case H2:
+            default:
+                return "\"" + identifier.replace("\"", "\"\"") + "\"";
+        }
     }
 
     private boolean isSystemSchema(String schema) {
