@@ -62,7 +62,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
       [DatabaseType.MYSQL]: 3306,
       [DatabaseType.POSTGRESQL]: 5432,
       [DatabaseType.SQLITE]: 0,
-      [DatabaseType.H2]: 9092
+      [DatabaseType.H2]: 9092,
+      [DatabaseType.ORACLE]: 1521,
+      [DatabaseType.SQL_SERVER]: 1433
     };
     
     if (!connection) {
@@ -163,6 +165,8 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
           <MenuItem value={DatabaseType.POSTGRESQL}>PostgreSQL</MenuItem>
           <MenuItem value={DatabaseType.SQLITE}>SQLite</MenuItem>
           <MenuItem value={DatabaseType.H2}>H2</MenuItem>
+          <MenuItem value={DatabaseType.ORACLE}>Oracle Database</MenuItem>
+          <MenuItem value={DatabaseType.SQL_SERVER}>Microsoft SQL Server</MenuItem>
         </Select>
       </FormControl>
 

@@ -3,7 +3,9 @@ export enum DatabaseType {
   MYSQL = 'MYSQL',
   POSTGRESQL = 'POSTGRESQL',
   SQLITE = 'SQLITE',
-  H2 = 'H2'
+  H2 = 'H2',
+  ORACLE = 'ORACLE',
+  SQL_SERVER = 'SQL_SERVER'
 }
 
 // Connection Types

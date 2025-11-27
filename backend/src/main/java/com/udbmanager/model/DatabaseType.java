@@ -1,10 +1,15 @@
 package com.udbmanager.model;
 
+/**
+ * Enum for supported database types
+ */
 public enum DatabaseType {
     MYSQL("com.mysql.cj.jdbc.Driver", "jdbc:mysql://"),
     POSTGRESQL("org.postgresql.Driver", "jdbc:postgresql://"),
     SQLITE("org.sqlite.JDBC", "jdbc:sqlite:"),
-    H2("org.h2.Driver", "jdbc:h2:");
+    H2("org.h2.Driver", "jdbc:h2:"),
+    ORACLE("oracle.jdbc.OracleDriver", "jdbc:oracle:thin:@"),
+    SQL_SERVER("com.microsoft.sqlserver.jdbc.SQLServerDriver", "jdbc:sqlserver://");
 
     private final String driverClassName;
     private final String urlPrefix;

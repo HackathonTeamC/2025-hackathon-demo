@@ -68,23 +68,65 @@ public class DatabaseConnectionManager {
         
         StringBuilder url = new StringBuilder(urlPrefix);
         
-        if (dbType == DatabaseType.SQLITE) {
-            url.append(dbConnection.getDatabaseName());
-        } else {
-            url.append(dbConnection.getHost())
-               .append(":")
-               .append(dbConnection.getPort())
-               .append("/")
-               .append(dbConnection.getDatabaseName());
-            
-            if (dbConnection.getSslEnabled()) {
-                url.append("?useSSL=true");
-            }
-            
-            if (dbConnection.getConnectionOptions() != null && !dbConnection.getConnectionOptions().isEmpty()) {
-                String separator = dbConnection.getSslEnabled() ? "&" : "?";
-                url.append(separator).append(dbConnection.getConnectionOptions());
-            }
+        switch (dbType) {
+            case SQLITE:
+                // jdbc:sqlite:path/to/database.db
+                url.append(dbConnection.getDatabaseName());
+                break;
+                
+            case H2:
+                // jdbc:h2:~/test or jdbc:h2:mem:test
+                url.append(dbConnection.getDatabaseName());
+                break;
+                
+            case ORACLE:
+                // jdbc:oracle:thin:@host:port:sid or jdbc:oracle:thin:@host:port/service_name
+                url.append(dbConnection.getHost())
+                   .append(":")
+                   .append(dbConnection.getPort())
+                   .append(":")
+                   .append(dbConnection.getDatabaseName());
+                
+                if (dbConnection.getConnectionOptions() != null && !dbConnection.getConnectionOptions().isEmpty()) {
+                    url.append("?").append(dbConnection.getConnectionOptions());
+                }
+                break;
+                
+            case SQL_SERVER:
+                // jdbc:sqlserver://host:port;databaseName=dbname
+                url.append(dbConnection.getHost())
+                   .append(":")
+                   .append(dbConnection.getPort())
+                   .append(";databaseName=")
+                   .append(dbConnection.getDatabaseName());
+                
+                if (dbConnection.getSslEnabled()) {
+                    url.append(";encrypt=true;trustServerCertificate=false");
+                }
+                
+                if (dbConnection.getConnectionOptions() != null && !dbConnection.getConnectionOptions().isEmpty()) {
+                    url.append(";").append(dbConnection.getConnectionOptions());
+                }
+                break;
+                
+            default:
+                // MySQL, PostgreSQL and other standard databases
+                // jdbc:mysql://host:port/database or jdbc:postgresql://host:port/database
+                url.append(dbConnection.getHost())
+                   .append(":")
+                   .append(dbConnection.getPort())
+                   .append("/")
+                   .append(dbConnection.getDatabaseName());
+                
+                if (dbConnection.getSslEnabled()) {
+                    url.append("?useSSL=true");
+                }
+                
+                if (dbConnection.getConnectionOptions() != null && !dbConnection.getConnectionOptions().isEmpty()) {
+                    String separator = dbConnection.getSslEnabled() ? "&" : "?";
+                    url.append(separator).append(dbConnection.getConnectionOptions());
+                }
+                break;
         }
         
         return url.toString();

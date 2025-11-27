@@ -11,6 +11,12 @@
   - 接続テスト機能
   - パスワードの暗号化保存
 
+### Phase 2 - 実装済み
+- ✅ **エンタープライズデータベース対応**
+  - Oracle Database 対応
+  - Microsoft SQL Server 対応
+  - データベース固有の接続文字列フォーマットに対応
+
 - ✅ **メタデータ閲覧**
   - テーブル一覧表示
   - カラム情報の詳細表示（データ型、主キー、NULL許可など）
@@ -37,6 +43,8 @@
   - H2 (接続情報保存用)
   - MySQL Connector
   - PostgreSQL Driver
+  - Oracle JDBC Driver (ojdbc11)
+  - Microsoft SQL Server JDBC Driver
   - HikariCP (コネクションプール)
 - **セキュリティ**: Jasypt (パスワード暗号化)
 
@@ -206,7 +214,7 @@ udb-manager/
         └── types/              # TypeScript 型定義
 ```
 
-## 🚧 今後の拡張予定
+## 🚧 今後の拡張予定（Phase 3以降）
 
 - ユーザー認証・認可機能
 - クエリ履歴・ブックマーク機能
@@ -214,6 +222,7 @@ udb-manager/
 - クエリビルダー（GUI ベースのクエリ作成）
 - MongoDB, Snowflake, Salesforce 対応
 - ER図の自動生成
+- パフォーマンス監視・チューニング支援
 
 ## 📄 ライセンス
 
@@ -223,7 +232,22 @@ MIT License
 
 SWE Agent
 
+## 📊 対応データベース一覧
+
+| データベース | サポート状況 | デフォルトポート | 備考 |
+|------------|------------|-----------------|------|
+| MySQL | ✅ Phase 1 | 3306 | |
+| PostgreSQL | ✅ Phase 1 | 5432 | |
+| SQLite | ✅ Phase 1 | - | ファイルベース |
+| H2 | ✅ Phase 1 | 9092 | 組み込み/サーバーモード |
+| Oracle Database | ✅ Phase 2 | 1521 | SID/Service Name 対応 |
+| Microsoft SQL Server | ✅ Phase 2 | 1433 | SSL暗号化対応 |
+| MongoDB | 🔜 Phase 3 | 27017 | 予定 |
+| Snowflake | 🔜 Phase 3 | - | 予定 |
+| Salesforce | 🔜 Phase 3 | - | 予定 |
+
 ---
 
-**バージョン**: 1.0.0  
+**バージョン**: 2.0.0  
 **作成日**: 2025年11月27日
+**最終更新**: 2025年11月27日（Phase 2 完了）
