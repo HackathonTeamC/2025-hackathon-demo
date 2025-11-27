@@ -1,0 +1,186 @@
+{
+  "casual_topics": [
+    {
+      "content": "☕ 今日のランチは何を食べましたか？おすすめがあればシェアしてください！",
+      "reaction_emoji": "👍"
+    },
+    {
+      "content": "🎮 最近ハマっているゲームや趣味はありますか？",
+      "reaction_emoji": "🎉"
+    },
+    {
+      "content": "📚 最近読んだ本や漫画で面白かったものを教えてください！",
+      "reaction_emoji": "📖"
+    },
+    {
+      "content": "🎵 作業中に聞く音楽のジャンルは？集中できるBGMを共有しましょう！",
+      "reaction_emoji": "🎧"
+    },
+    {
+      "content": "☕ お気に入りのカフェやコーヒーショップはありますか？",
+      "reaction_emoji": "❤️"
+    },
+    {
+      "content": "🎬 最近見た映画やドラマでおすすめはありますか？",
+      "reaction_emoji": "🍿"
+    },
+    {
+      "content": "🍜 好きな食べ物・料理のジャンルは？おすすめのお店があれば教えてください！",
+      "reaction_emoji": "😋"
+    },
+    {
+      "content": "🏃 運動や健康のために何かやっていることはありますか？",
+      "reaction_emoji": "💪"
+    },
+    {
+      "content": "🌴 行ってみたい旅行先や、最近行った場所で良かったところは？",
+      "reaction_emoji": "✈️"
+    },
+    {
+      "content": "🎨 最近始めた趣味や、やってみたいことはありますか？",
+      "reaction_emoji": "🌟"
+    },
+    {
+      "content": "😴 最近の睡眠時間は足りてますか？良い睡眠のコツがあれば教えてください！",
+      "reaction_emoji": "😪"
+    },
+    {
+      "content": "🐱 ペットを飼っている方、自慢のペット写真を見せてください！",
+      "reaction_emoji": "🐶"
+    },
+    {
+      "content": "🎂 好きなスイーツ・デザートは？おすすめのお店があれば！",
+      "reaction_emoji": "🍰"
+    },
+    {
+      "content": "📺 最近のお気に入りYouTubeチャンネルや配信者は？",
+      "reaction_emoji": "📹"
+    },
+    {
+      "content": "🎯 今年の目標は何ですか？進捗はどうですか？",
+      "reaction_emoji": "🏆"
+    },
+    {
+      "content": "🌦️ 好きな季節は？その季節の楽しみ方を教えてください！",
+      "reaction_emoji": "🌸"
+    },
+    {
+      "content": "🍺 仕事終わりのリフレッシュ方法は？",
+      "reaction_emoji": "🍻"
+    },
+    {
+      "content": "📱 最近買ってよかったガジェットや便利グッズはありますか？",
+      "reaction_emoji": "✨"
+    },
+    {
+      "content": "🚴 通勤・通学の時間、何をして過ごしていますか？",
+      "reaction_emoji": "🚇"
+    },
+    {
+      "content": "🎪 週末の過ごし方、どんなことをしていますか？",
+      "reaction_emoji": "🎉"
+    }
+  ],
+  "technical_topics": [
+    {
+      "content": "💻 最近使ってみて良かった開発ツールやライブラリはありますか？",
+      "reaction_emoji": "🚀"
+    },
+    {
+      "content": "🔧 コードレビューで気をつけていることや、レビューのコツを教えてください！",
+      "reaction_emoji": "👀"
+    },
+    {
+      "content": "🐛 最近遭遇した面白いバグや、印象に残ったデバッグ体験はありますか？",
+      "reaction_emoji": "🐞"
+    },
+    {
+      "content": "📊 パフォーマンス改善やリファクタリングで成功した事例を聞かせてください！",
+      "reaction_emoji": "⚡"
+    },
+    {
+      "content": "🎓 次に学びたい技術や、チームで勉強会をやりたいテーマはありますか？",
+      "reaction_emoji": "📚"
+    },
+    {
+      "content": "🔐 セキュリティ対策で意識していることや、気をつけているポイントは？",
+      "reaction_emoji": "🛡️"
+    },
+    {
+      "content": "🧪 テストコードの書き方や、テスト戦略で工夫していることは？",
+      "reaction_emoji": "✅"
+    },
+    {
+      "content": "📝 ドキュメントの書き方や、良いドキュメントのポイントを教えてください！",
+      "reaction_emoji": "📄"
+    },
+    {
+      "content": "🎯 技術的な課題を解決した時の「これだ！」という瞬間のエピソードは？",
+      "reaction_emoji": "💡"
+    },
+    {
+      "content": "🏗️ アーキテクチャ設計で参考にしているパターンやベストプラクティスは？",
+      "reaction_emoji": "🏛️"
+    },
+    {
+      "content": "🔄 CI/CDパイプラインで工夫していることや、自動化の事例を教えてください！",
+      "reaction_emoji": "⚙️"
+    },
+    {
+      "content": "📱 モバイル開発とWeb開発、それぞれの面白さや難しさは？",
+      "reaction_emoji": "📲"
+    },
+    {
+      "content": "🎨 UI/UXデザインで参考にしているサイトやツールはありますか？",
+      "reaction_emoji": "🖌️"
+    },
+    {
+      "content": "🌐 APIデザインで大切にしていることや、RESTful設計のコツは？",
+      "reaction_emoji": "🔗"
+    },
+    {
+      "content": "💾 データベース設計やクエリ最適化で学んだことを共有しましょう！",
+      "reaction_emoji": "🗄️"
+    },
+    {
+      "content": "☁️ クラウドサービス（AWS/GCP/Azure）で便利な機能や使い方のコツは？",
+      "reaction_emoji": "☁️"
+    },
+    {
+      "content": "🐳 Docker/Kubernetesの活用事例や、コンテナ化のメリットを教えてください！",
+      "reaction_emoji": "🐋"
+    },
+    {
+      "content": "🔍 ログ解析やモニタリングで使っているツールや手法は？",
+      "reaction_emoji": "📈"
+    },
+    {
+      "content": "🎮 ゲーム開発やアニメーション実装で面白かった技術はありますか？",
+      "reaction_emoji": "🕹️"
+    },
+    {
+      "content": "🤖 AIや機械学習を実際のプロダクトに組み込んだ経験や知見はありますか？",
+      "reaction_emoji": "🧠"
+    },
+    {
+      "content": "📦 パッケージマネージャーや依存関係管理で困ったこと・解決方法は？",
+      "reaction_emoji": "📦"
+    },
+    {
+      "content": "🌍 国際化（i18n）やタイムゾーン処理で気をつけるポイントは？",
+      "reaction_emoji": "🌏"
+    },
+    {
+      "content": "⚡ フロントエンドのパフォーマンス最適化、どんな手法を使っていますか？",
+      "reaction_emoji": "🚀"
+    },
+    {
+      "content": "🔒 認証・認可の実装で参考にしているパターンやライブラリは？",
+      "reaction_emoji": "🔑"
+    },
+    {
+      "content": "📚 技術書や技術ブログで最近読んで良かったものを教えてください！",
+      "reaction_emoji": "📖"
+    }
+  ]
+}

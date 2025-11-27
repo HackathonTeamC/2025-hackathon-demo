@@ -21,7 +21,7 @@ from shared.models import Topic, EventTracking
 
 def load_topics() -> dict:
     """話題マスターデータをロード"""
-    topics_file = os.path.join(os.path.dirname(__file__), '..', '..', 'data', 'topics.json')
+    topics_file = os.path.join(os.path.dirname(__file__), 'topics.json')
     with open(topics_file, 'r', encoding='utf-8') as f:
         return json.load(f)
 
