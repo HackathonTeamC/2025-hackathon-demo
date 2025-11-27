@@ -45,9 +45,11 @@ public class DataService {
             if (request.getSortColumn() != null && !request.getSortColumn().isEmpty()) {
                 queryBuilder.append(" ORDER BY ").append(request.getSortColumn())
                            .append(" ").append(request.getSortDirection());
-            } else {
+            } else if (dbConnection.getDatabaseType() == com.udbmanager.model.DatabaseType.SQL_SERVER ||
+                       dbConnection.getDatabaseType() == com.udbmanager.model.DatabaseType.ORACLE) {
                 // SQL Server and Oracle require ORDER BY for OFFSET/FETCH
-                queryBuilder.append(" ORDER BY (SELECT NULL)");
+                // Use first column as default
+                queryBuilder.append(" ORDER BY 1");
             }
             
             int offset = request.getPage() * request.getSize();
