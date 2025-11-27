@@ -81,11 +81,19 @@ public class DatabaseConnectionManager {
                 
             case ORACLE:
                 // jdbc:oracle:thin:@host:port:sid or jdbc:oracle:thin:@host:port/service_name
+                // If databaseName starts with '/', use Service Name format, otherwise use SID format
                 url.append(dbConnection.getHost())
                    .append(":")
-                   .append(dbConnection.getPort())
-                   .append(":")
-                   .append(dbConnection.getDatabaseName());
+                   .append(dbConnection.getPort());
+                
+                String dbName = dbConnection.getDatabaseName();
+                if (dbName.startsWith("/")) {
+                    // Service Name format: jdbc:oracle:thin:@host:port/service_name
+                    url.append(dbName);
+                } else {
+                    // SID format: jdbc:oracle:thin:@host:port:sid
+                    url.append(":").append(dbName);
+                }
                 
                 if (dbConnection.getConnectionOptions() != null && !dbConnection.getConnectionOptions().isEmpty()) {
                     url.append("?").append(dbConnection.getConnectionOptions());

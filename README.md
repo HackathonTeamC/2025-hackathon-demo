@@ -240,7 +240,7 @@ SWE Agent
 | PostgreSQL | ✅ Phase 1 | 5432 | |
 | SQLite | ✅ Phase 1 | - | ファイルベース |
 | H2 | ✅ Phase 1 | 9092 | 組み込み/サーバーモード |
-| Oracle Database | ✅ Phase 2 | 1521 | SID/Service Name 対応 |
+| Oracle Database | ✅ Phase 2 | 1521 | SID形式: `ORCL` または Service Name形式: `/XEPDB1` |
 | Microsoft SQL Server | ✅ Phase 2 | 1433 | SSL暗号化対応 |
 | MongoDB | 🔜 Phase 3 | 27017 | 予定 |
 | Snowflake | 🔜 Phase 3 | - | 予定 |
