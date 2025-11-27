@@ -1,9 +1,6 @@
 package com.udbmanager.service;
 
-import com.force.api.DescribeGlobal;
-import com.force.api.DescribeSObject;
-import com.force.api.Field;
-import com.force.api.ForceApi;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.udbmanager.dto.ColumnInfo;
 import com.udbmanager.dto.TableInfo;
 import com.udbmanager.exception.DatabaseConnectionException;
@@ -36,16 +33,20 @@ public class SalesforceMetadataService {
         List<TableInfo> tables = new ArrayList<>();
         
         try {
-            ForceApi api = salesforceConnectionManager.getForceApi(dbConnection, decryptedPassword);
-            DescribeGlobal describeGlobal = api.describeGlobal();
+            SalesforceConnectionManager.SalesforceSession session = 
+                    salesforceConnectionManager.getSession(dbConnection, decryptedPassword);
             
-            for (DescribeGlobal.SObject sObject : describeGlobal.sobjects) {
-                TableInfo table = new TableInfo();
-                table.setTableName(sObject.name);
-                table.setTableType(sObject.custom ? "CUSTOM" : "STANDARD");
-                table.setRemarks(sObject.label);
-                // Row count not available in global describe
-                tables.add(table);
+            JsonNode response = salesforceConnectionManager.describeGlobal(session);
+            JsonNode sobjects = response.get("sobjects");
+            
+            if (sobjects != null && sobjects.isArray()) {
+                for (JsonNode sObject : sobjects) {
+                    TableInfo table = new TableInfo();
+                    table.setTableName(sObject.get("name").asText());
+                    table.setTableType(sObject.get("custom").asBoolean() ? "CUSTOM" : "STANDARD");
+                    table.setRemarks(sObject.get("label").asText());
+                    tables.add(table);
+                }
             }
             
             log.info("Retrieved {} Salesforce objects", tables.size());
@@ -68,22 +69,28 @@ public class SalesforceMetadataService {
         List<ColumnInfo> columns = new ArrayList<>();
         
         try {
-            ForceApi api = salesforceConnectionManager.getForceApi(dbConnection, decryptedPassword);
-            DescribeSObject describeSObject = api.describeSObject(objectName);
+            SalesforceConnectionManager.SalesforceSession session = 
+                    salesforceConnectionManager.getSession(dbConnection, decryptedPassword);
             
-            for (Field field : describeSObject.fields) {
-                ColumnInfo column = new ColumnInfo();
-                column.setColumnName(field.name);
-                column.setDataType(field.type);
-                column.setColumnSize(field.length);
-                column.setDecimalDigits(field.scale);
-                column.setNullable(field.nillable);
-                column.setDefaultValue(field.defaultValueFormula);
-                column.setPrimaryKey(field.name.equals("Id"));
-                column.setAutoIncrement(field.autoNumber);
-                column.setRemarks(field.label);
-                
-                columns.add(column);
+            JsonNode response = salesforceConnectionManager.describeSObject(session, objectName);
+            JsonNode fields = response.get("fields");
+            
+            if (fields != null && fields.isArray()) {
+                for (JsonNode field : fields) {
+                    ColumnInfo column = new ColumnInfo();
+                    column.setColumnName(field.get("name").asText());
+                    column.setDataType(field.get("type").asText());
+                    column.setColumnSize(field.has("length") ? field.get("length").asInt() : null);
+                    column.setDecimalDigits(field.has("scale") ? field.get("scale").asInt() : null);
+                    column.setNullable(field.get("nillable").asBoolean());
+                    column.setDefaultValue(field.has("defaultValueFormula") ? 
+                            field.get("defaultValueFormula").asText() : null);
+                    column.setPrimaryKey(field.get("name").asText().equals("Id"));
+                    column.setAutoIncrement(field.has("autoNumber") && field.get("autoNumber").asBoolean());
+                    column.setRemarks(field.get("label").asText());
+                    
+                    columns.add(column);
+                }
             }
             
             log.info("Retrieved {} fields for Salesforce object: {}", columns.size(), objectName);

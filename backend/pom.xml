@@ -82,11 +82,10 @@
             <scope>runtime</scope>
         </dependency>
         
-        <!-- Salesforce REST API -->
+        <!-- WebClient for Salesforce REST API -->
         <dependency>
-            <groupId>com.force.api</groupId>
-            <artifactId>force-rest-api</artifactId>
-            <version>0.0.44</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
         
         <!-- HikariCP Connection Pool -->

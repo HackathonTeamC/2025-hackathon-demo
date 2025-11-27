@@ -1,65 +1,98 @@
 package com.udbmanager.service;
 
-import com.force.api.ApiConfig;
-import com.force.api.ForceApi;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.udbmanager.exception.DatabaseConnectionException;
 import com.udbmanager.model.DatabaseConnection;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Manages Salesforce REST API connections
+ * Manages Salesforce REST API connections using WebClient
  */
 @Component
 @Slf4j
 public class SalesforceConnectionManager {
 
-    private final Map<String, ForceApi> apiCache = new ConcurrentHashMap<>();
+    private final Map<String, SalesforceSession> sessionCache = new ConcurrentHashMap<>();
+    private final WebClient webClient = WebClient.builder().build();
 
-    /**
-     * Get or create Salesforce API connection
-     */
-    public ForceApi getForceApi(DatabaseConnection dbConnection, String decryptedPassword) {
-        String connectionId = dbConnection.getId();
-        
-        // Return cached API if available
-        if (apiCache.containsKey(connectionId)) {
-            return apiCache.get(connectionId);
-        }
-
-        // Create new API connection
-        ForceApi api = createForceApi(dbConnection, decryptedPassword);
-        apiCache.put(connectionId, api);
-        return api;
+    @Data
+    public static class SalesforceSession {
+        private String accessToken;
+        private String instanceUrl;
+        private String apiVersion = "v57.0"; // Salesforce API version
     }
 
     /**
-     * Create a new Salesforce API connection
+     * Get or create Salesforce session
      */
-    private ForceApi createForceApi(DatabaseConnection dbConnection, String decryptedPassword) {
+    public SalesforceSession getSession(DatabaseConnection dbConnection, String decryptedPassword) {
+        String connectionId = dbConnection.getId();
+        
+        // Return cached session if available
+        if (sessionCache.containsKey(connectionId)) {
+            return sessionCache.get(connectionId);
+        }
+
+        // Create new session
+        SalesforceSession session = authenticate(dbConnection, decryptedPassword);
+        sessionCache.put(connectionId, session);
+        return session;
+    }
+
+    /**
+     * Authenticate with Salesforce using Username/Password flow
+     */
+    private SalesforceSession authenticate(DatabaseConnection dbConnection, String decryptedPassword) {
         try {
-            // Instance URL from host (e.g., https://your-instance.salesforce.com)
-            String instanceUrl = dbConnection.getHost();
-            if (!instanceUrl.startsWith("http")) {
-                instanceUrl = "https://" + instanceUrl;
+            String loginUrl = dbConnection.getHost();
+            if (!loginUrl.startsWith("http")) {
+                loginUrl = "https://" + loginUrl;
             }
             
-            // Username/Password authentication
-            ApiConfig config = new ApiConfig()
-                    .setUsername(dbConnection.getUsername())
-                    .setPassword(decryptedPassword)
-                    .setLoginEndpoint(instanceUrl + "/services/oauth2/token");
+            // OAuth 2.0 Username-Password flow
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("grant_type", "password");
+            formData.add("client_id", "3MVG9_XwsqeYoue_your_consumer_key"); // Placeholder
+            formData.add("client_secret", "your_consumer_secret"); // Placeholder
+            formData.add("username", dbConnection.getUsername());
+            formData.add("password", decryptedPassword);
+
+            // For now, use SOAP login endpoint as fallback
+            String authEndpoint = loginUrl + "/services/oauth2/token";
             
-            ForceApi api = new ForceApi(config);
-            log.info("Salesforce API connection created for: {}", dbConnection.getConnectionName());
-            return api;
-            
+            JsonNode response = webClient.post()
+                    .uri(authEndpoint)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(BodyInserters.fromFormData(formData))
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            if (response == null) {
+                throw new DatabaseConnectionException("Failed to authenticate with Salesforce");
+            }
+
+            SalesforceSession session = new SalesforceSession();
+            session.setAccessToken(response.get("access_token").asText());
+            session.setInstanceUrl(response.get("instance_url").asText());
+
+            log.info("Salesforce authentication successful for: {}", dbConnection.getConnectionName());
+            return session;
+
         } catch (Exception e) {
-            log.error("Failed to create Salesforce API connection for: {}", dbConnection.getConnectionName(), e);
-            throw new DatabaseConnectionException("Failed to connect to Salesforce: " + e.getMessage(), e);
+            log.error("Failed to authenticate with Salesforce", e);
+            throw new DatabaseConnectionException("Failed to authenticate with Salesforce: " + e.getMessage(), e);
         }
     }
 
@@ -68,10 +101,22 @@ public class SalesforceConnectionManager {
      */
     public void testConnection(DatabaseConnection dbConnection, String decryptedPassword) {
         try {
-            ForceApi api = createForceApi(dbConnection, decryptedPassword);
+            SalesforceSession session = authenticate(dbConnection, decryptedPassword);
+            
             // Test with a simple query
-            api.query("SELECT Id FROM User LIMIT 1");
-            log.info("Salesforce connection test successful for: {}", dbConnection.getConnectionName());
+            String queryUrl = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() + "/query";
+            
+            webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(queryUrl)
+                            .queryParam("q", "SELECT Id FROM User LIMIT 1")
+                            .build())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + session.getAccessToken())
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            log.info("Salesforce connection test successful");
         } catch (Exception e) {
             log.error("Salesforce connection test failed", e);
             throw new DatabaseConnectionException("Salesforce connection test failed: " + e.getMessage(), e);
@@ -79,20 +124,79 @@ public class SalesforceConnectionManager {
     }
 
     /**
-     * Close and remove API from cache
+     * Execute SOQL query
+     */
+    public JsonNode executeQuery(SalesforceSession session, String soql) {
+        try {
+            String queryUrl = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() + "/query";
+            
+            return webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(queryUrl)
+                            .queryParam("q", soql)
+                            .build())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + session.getAccessToken())
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+        } catch (Exception e) {
+            log.error("Failed to execute SOQL query", e);
+            throw new DatabaseConnectionException("Failed to execute SOQL query: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Get Salesforce metadata (describe global)
+     */
+    public JsonNode describeGlobal(SalesforceSession session) {
+        try {
+            String url = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() + "/sobjects";
+            
+            return webClient.get()
+                    .uri(url)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + session.getAccessToken())
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+        } catch (Exception e) {
+            log.error("Failed to describe global", e);
+            throw new DatabaseConnectionException("Failed to retrieve Salesforce objects: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Describe specific Salesforce object
+     */
+    public JsonNode describeSObject(SalesforceSession session, String objectName) {
+        try {
+            String url = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() 
+                    + "/sobjects/" + objectName + "/describe";
+            
+            return webClient.get()
+                    .uri(url)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + session.getAccessToken())
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+        } catch (Exception e) {
+            log.error("Failed to describe object: {}", objectName, e);
+            throw new DatabaseConnectionException("Failed to describe object: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Close and remove session from cache
      */
     public void closeConnection(String connectionId) {
-        ForceApi api = apiCache.remove(connectionId);
-        if (api != null) {
-            log.info("Closed Salesforce API connection for ID: {}", connectionId);
-        }
+        sessionCache.remove(connectionId);
+        log.info("Closed Salesforce session for ID: {}", connectionId);
     }
 
     /**
      * Close all connections
      */
     public void closeAllConnections() {
-        apiCache.clear();
-        log.info("All Salesforce API connections closed");
+        sessionCache.clear();
+        log.info("All Salesforce sessions closed");
     }
 }

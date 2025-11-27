@@ -1,7 +1,6 @@
 package com.udbmanager.service;
 
-import com.force.api.ForceApi;
-import com.force.api.QueryResult;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.udbmanager.dto.DataQueryRequest;
 import com.udbmanager.dto.DataQueryResponse;
 import com.udbmanager.dto.SqlExecutionRequest;
@@ -12,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Service for querying Salesforce data using SOQL
@@ -36,10 +32,11 @@ public class SalesforceDataService {
         String decryptedPassword = connectionService.getDecryptedPassword(dbConnection);
         
         try {
-            ForceApi api = salesforceConnectionManager.getForceApi(dbConnection, decryptedPassword);
+            SalesforceConnectionManager.SalesforceSession session = 
+                    salesforceConnectionManager.getSession(dbConnection, decryptedPassword);
             
-            // Build SOQL query
-            StringBuilder soql = new StringBuilder("SELECT FIELDS(ALL) FROM ");
+            // Build SOQL query - use specific fields instead of FIELDS(ALL)
+            StringBuilder soql = new StringBuilder("SELECT Id, Name FROM ");
             soql.append(objectName);
             
             // Add WHERE clause for filters
@@ -67,17 +64,11 @@ public class SalesforceDataService {
             soql.append(" OFFSET ").append(offset);
             
             // Execute query
-            QueryResult<Map> queryResult = api.query(soql.toString(), Map.class);
+            JsonNode response = salesforceConnectionManager.executeQuery(session, soql.toString());
             
             // Convert to response format
-            List<Map<String, Object>> data = new ArrayList<>();
-            for (Map record : queryResult.getRecords()) {
-                Map<String, Object> row = new LinkedHashMap<>(record);
-                data.add(row);
-            }
-            
-            // Get total count (Salesforce doesn't provide it in query result)
-            Long totalRecords = (long) queryResult.getTotalSize();
+            List<Map<String, Object>> data = convertRecords(response.get("records"));
+            long totalRecords = response.get("totalSize").asLong();
             int totalPages = (int) Math.ceil((double) totalRecords / request.getSize());
             
             return new DataQueryResponse(data, totalRecords, request.getPage(), request.getSize(), totalPages);
@@ -99,22 +90,19 @@ public class SalesforceDataService {
         long startTime = System.currentTimeMillis();
         
         try {
-            ForceApi api = salesforceConnectionManager.getForceApi(dbConnection, decryptedPassword);
+            SalesforceConnectionManager.SalesforceSession session = 
+                    salesforceConnectionManager.getSession(dbConnection, decryptedPassword);
             
             // Execute SOQL query
-            QueryResult<Map> queryResult = api.query(soql, Map.class);
+            JsonNode response = salesforceConnectionManager.executeQuery(session, soql);
             long executionTime = System.currentTimeMillis() - startTime;
             
             // Convert to response format
-            List<Map<String, Object>> data = new ArrayList<>();
-            int count = 0;
-            for (Map record : queryResult.getRecords()) {
-                if (count >= request.getMaxRows()) {
-                    break;
-                }
-                Map<String, Object> row = new LinkedHashMap<>(record);
-                data.add(row);
-                count++;
+            List<Map<String, Object>> data = convertRecords(response.get("records"));
+            
+            // Limit to maxRows
+            if (data.size() > request.getMaxRows()) {
+                data = data.subList(0, request.getMaxRows());
             }
             
             return SqlExecutionResponse.success("SELECT", data, data.size(), executionTime);
@@ -123,5 +111,46 @@ public class SalesforceDataService {
             log.error("SOQL execution failed", e);
             return SqlExecutionResponse.error(e.getMessage());
         }
+    }
+
+    /**
+     * Convert JsonNode records to List of Maps
+     */
+    private List<Map<String, Object>> convertRecords(JsonNode records) {
+        List<Map<String, Object>> data = new ArrayList<>();
+        
+        if (records != null && records.isArray()) {
+            for (JsonNode record : records) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                Iterator<Map.Entry<String, JsonNode>> fields = record.fields();
+                
+                while (fields.hasNext()) {
+                    Map.Entry<String, JsonNode> field = fields.next();
+                    String key = field.getKey();
+                    
+                    // Skip 'attributes' field (Salesforce metadata)
+                    if (key.equals("attributes")) {
+                        continue;
+                    }
+                    
+                    JsonNode value = field.getValue();
+                    if (value.isNull()) {
+                        row.put(key, null);
+                    } else if (value.isTextual()) {
+                        row.put(key, value.asText());
+                    } else if (value.isNumber()) {
+                        row.put(key, value.asDouble());
+                    } else if (value.isBoolean()) {
+                        row.put(key, value.asBoolean());
+                    } else {
+                        row.put(key, value.toString());
+                    }
+                }
+                
+                data.add(row);
+            }
+        }
+        
+        return data;
     }
 }
