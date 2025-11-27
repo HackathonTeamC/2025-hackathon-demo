@@ -45,10 +45,15 @@ public class DataService {
             if (request.getSortColumn() != null && !request.getSortColumn().isEmpty()) {
                 queryBuilder.append(" ORDER BY ").append(request.getSortColumn())
                            .append(" ").append(request.getSortDirection());
+            } else {
+                // SQL Server and Oracle require ORDER BY for OFFSET/FETCH
+                queryBuilder.append(" ORDER BY (SELECT NULL)");
             }
             
             int offset = request.getPage() * request.getSize();
-            queryBuilder.append(" LIMIT ? OFFSET ?");
+            
+            // Add pagination based on database type
+            appendPaginationClause(queryBuilder, dbConnection.getDatabaseType(), request.getSize(), offset);
             
             Long totalRecords = getTotalCount(connection, fullTableName, request.getFilters());
             
@@ -58,8 +63,6 @@ public class DataService {
                 for (Object param : parameters) {
                     stmt.setObject(paramIndex++, param);
                 }
-                stmt.setInt(paramIndex++, request.getSize());
-                stmt.setInt(paramIndex, offset);
                 
                 try (ResultSet rs = stmt.executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
@@ -248,5 +251,28 @@ public class DataService {
             return schemaName + "." + tableName;
         }
         return tableName;
+    }
+
+    /**
+     * Append database-specific pagination clause
+     */
+    private void appendPaginationClause(StringBuilder queryBuilder, com.udbmanager.model.DatabaseType dbType, 
+                                        int limit, int offset) {
+        switch (dbType) {
+            case SQL_SERVER:
+            case ORACLE:
+                // SQL Server and Oracle use OFFSET ... ROWS FETCH NEXT ... ROWS ONLY
+                queryBuilder.append(" OFFSET ").append(offset).append(" ROWS")
+                           .append(" FETCH NEXT ").append(limit).append(" ROWS ONLY");
+                break;
+            case MYSQL:
+            case POSTGRESQL:
+            case SQLITE:
+            case H2:
+            default:
+                // MySQL, PostgreSQL, SQLite, H2 use LIMIT ... OFFSET ...
+                queryBuilder.append(" LIMIT ").append(limit).append(" OFFSET ").append(offset);
+                break;
+        }
     }
 }
