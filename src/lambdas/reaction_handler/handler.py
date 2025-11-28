@@ -397,7 +397,8 @@ def lambda_handler(event, context):
                 # クライアント初期化
                 slack = SlackClient()
                 db = DynamoDBClient()
-                calendar = CalendarClient()
+                calendar = CalendarClient(calendar_id=os.environ.get('CALENDAR_ID', 'primary'))
+
                 
                 # メッセージ処理
                 result = handle_message_event(event_data, slack, db, calendar)
