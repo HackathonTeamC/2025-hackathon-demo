@@ -88,12 +88,15 @@ class CalendarClient:
                     'html_link': カレンダーURL,
                     'summary': イベント名,
                     'start': 開始時刻,
-                    'end': 終了時刻
+                    'end': 終了時刻,
+                    'meet_link': Google Meetのリンク
                 }
                 
         Raises:
             Exception: イベント作成失敗時
         """
+        import uuid
+        
         event = {
             'summary': summary,
             'location': location,
@@ -113,6 +116,15 @@ class CalendarClient:
                     {'method': 'popup', 'minutes': 30},  # 30分前
                 ],
             },
+            # Google Meetをイベント作成時に設定
+            'conferenceData': {
+                'createRequest': {
+                    'requestId': str(uuid.uuid4()),
+                    'conferenceSolutionKey': {
+                        'type': 'hangoutsMeet'
+                    }
+                }
+            }
         }
         
         # 共有カレンダーの場合は参加者を招待できる
@@ -125,18 +137,30 @@ class CalendarClient:
         try:
             # サービスアカウントは招待メールを送れないため、sendUpdates='none'にする
             # ただし、参加者はイベントに追加されるため、カレンダーで確認可能
+            # conferenceDataVersion=1を指定することで、Meetリンクがレスポンスに含まれる
             created_event = self.service.events().insert(
                 calendarId=self.calendar_id,
                 body=event,
-                sendUpdates='none'  # メール送信はしないが、参加者は追加される
+                sendUpdates='none',
+                conferenceDataVersion=1
             ).execute()
+            
+            # 作成レスポンスからMeetリンクを取得
+            meet_link = None
+            if 'conferenceData' in created_event:
+                entry_points = created_event['conferenceData'].get('entryPoints', [])
+                for entry_point in entry_points:
+                    if entry_point.get('entryPointType') == 'video':
+                        meet_link = entry_point.get('uri')
+                        break
             
             return {
                 'id': created_event['id'],
                 'html_link': created_event.get('htmlLink', ''),
                 'summary': created_event.get('summary', ''),
                 'start': created_event['start'].get('dateTime', ''),
-                'end': created_event['end'].get('dateTime', '')
+                'end': created_event['end'].get('dateTime', ''),
+                'meet_link': meet_link
             }
         except HttpError as error:
             # 403エラーが発生した場合は、参加者なしで再試行
@@ -149,15 +173,26 @@ class CalendarClient:
                 created_event = self.service.events().insert(
                     calendarId=self.calendar_id,
                     body=event,
-                    sendUpdates='none'
+                    sendUpdates='none',
+                    conferenceDataVersion=1
                 ).execute()
+                
+                # 作成レスポンスからMeetリンクを取得
+                meet_link = None
+                if 'conferenceData' in created_event:
+                    entry_points = created_event['conferenceData'].get('entryPoints', [])
+                    for entry_point in entry_points:
+                        if entry_point.get('entryPointType') == 'video':
+                            meet_link = entry_point.get('uri')
+                            break
                 
                 return {
                     'id': created_event['id'],
                     'html_link': created_event.get('htmlLink', ''),
                     'summary': created_event.get('summary', ''),
                     'start': created_event['start'].get('dateTime', ''),
-                    'end': created_event['end'].get('dateTime', '')
+                    'end': created_event['end'].get('dateTime', ''),
+                    'meet_link': meet_link
                 }
             raise Exception(f"Failed to create event: {error}")
     
