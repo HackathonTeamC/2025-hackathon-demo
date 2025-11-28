@@ -89,7 +89,11 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
     setOpenDialog(true);
   };
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = (event?: object, reason?: string) => {
+    // Prevent closing when clicking outside the dialog
+    if (reason === 'backdropClick') {
+      return;
+    }
     setOpenDialog(false);
     setEditingConnection(null);
   };
