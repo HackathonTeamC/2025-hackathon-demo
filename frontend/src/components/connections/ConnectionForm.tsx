@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { ConnectionRequest, ConnectionResponse, DatabaseType } from '../../types';
 import { connectionApi } from '../../services/api';
+import { useTranslation } from 'react-i18next';
 
 interface ConnectionFormProps {
   connection?: ConnectionResponse | null;
@@ -22,6 +23,7 @@ interface ConnectionFormProps {
 }
 
 const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, onCancel }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<ConnectionRequest>({
     connectionName: '',
     databaseType: DatabaseType.MYSQL,
@@ -162,7 +164,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
       <TextField
         fullWidth
         required
-        label="Connection Name"
+        label={t('connectionForm.connectionName')}
         name="connectionName"
         value={formData.connectionName}
         onChange={handleChange}
@@ -170,11 +172,11 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
       />
 
       <FormControl fullWidth required margin="normal">
-        <InputLabel>Database Type</InputLabel>
+        <InputLabel>{t('connectionForm.databaseType')}</InputLabel>
         <Select
           name="databaseType"
           value={formData.databaseType}
-          label="Database Type"
+          label={t('connectionForm.databaseType')}
           onChange={handleChange as any}
         >
           <MenuItem value={DatabaseType.MYSQL}>MySQL</MenuItem>
@@ -190,12 +192,12 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
       <TextField
         fullWidth
         required
-        label={formData.databaseType === DatabaseType.SALESFORCE ? "Instance URL" : "Host"}
+        label={formData.databaseType === DatabaseType.SALESFORCE ? t('connectionForm.instanceUrl') : t('connectionForm.host')}
         name="host"
         value={formData.host}
         onChange={handleChange}
         margin="normal"
-        helperText={formData.databaseType === DatabaseType.SALESFORCE ? "e.g., login.salesforce.com or test.salesforce.com" : ""}
+        helperText={formData.databaseType === DatabaseType.SALESFORCE ? t('connectionForm.salesforceInstanceHelper') : ""}
       />
 
       {formData.databaseType !== DatabaseType.SALESFORCE && (
@@ -203,7 +205,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
           fullWidth
           required
           type="number"
-          label="Port"
+          label={t('connectionForm.port')}
           name="port"
           value={formData.port}
           onChange={handleChange}
@@ -215,7 +217,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
         <TextField
           fullWidth
           required
-          label="Database Name"
+          label={t('connectionForm.databaseName')}
           name="databaseName"
           value={formData.databaseName}
           onChange={handleChange}
@@ -226,7 +228,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
       <TextField
         fullWidth
         required
-        label="Username"
+        label={t('connectionForm.username')}
         name="username"
         value={formData.username}
         onChange={handleChange}
@@ -273,13 +275,13 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
             name="sslEnabled"
           />
         }
-        label="Enable SSL"
+        label={t('connectionForm.sslEnabled')}
       />
 
       <TextField
         fullWidth
         type="number"
-        label="Timeout (seconds)"
+        label={t('connectionForm.timeout')}
         name="timeout"
         value={formData.timeout}
         onChange={handleChange}
@@ -293,13 +295,13 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
           disabled={loading}
           fullWidth
         >
-          {loading ? <CircularProgress size={24} /> : 'Test Connection'}
+          {loading ? <CircularProgress size={24} /> : t('connectionForm.testConnection')}
         </Button>
         <Button type="submit" variant="contained" disabled={loading} fullWidth>
-          {loading ? <CircularProgress size={24} /> : connection ? 'Update' : 'Create'}
+          {loading ? <CircularProgress size={24} /> : connection ? t('connectionForm.update') : t('connectionForm.create')}
         </Button>
         <Button variant="outlined" onClick={onCancel} disabled={loading}>
-          Cancel
+          {t('connectionForm.cancel')}
         </Button>
       </Box>
     </Box>
