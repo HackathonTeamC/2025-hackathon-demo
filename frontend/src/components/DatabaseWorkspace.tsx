@@ -17,6 +17,7 @@ import TableList from './metadata/TableList';
 import ColumnList from './metadata/ColumnList';
 import DataGrid from './data/DataGrid';
 import SqlEditor from './sql/SqlEditor';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface DatabaseWorkspaceProps {
   connection: ConnectionResponse;
@@ -77,7 +78,7 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
             color="inherit" 
             noWrap 
             sx={{ 
-              flexGrow: 0,
+              flexGrow: 1,
               opacity: 0.9
             }}
           >
@@ -85,6 +86,7 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
             {connection.port ? `:${connection.port}` : ''}
             {connection.databaseName ? ` / ${connection.databaseName}` : ''}
           </Typography>
+          <LanguageSwitcher />
         </Toolbar>
       </AppBar>
 

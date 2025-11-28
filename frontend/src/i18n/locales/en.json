@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "Universal Database Manager"
+  },
+  "connections": {
+    "title": "Database Connections",
+    "newConnection": "New Connection",
+    "noConnections": "No connections yet",
+    "createFirst": "Create your first database connection to get started",
+    "createConnection": "Create Connection",
+    "editConnection": "Edit Connection",
+    "deleteConfirm": "Are you sure you want to delete this connection?",
+    "connect": "Connect",
+    "test": "Test"
+  },
+  "connectionForm": {
+    "connectionName": "Connection Name",
+    "databaseType": "Database Type",
+    "host": "Host",
+    "instanceUrl": "Instance URL",
+    "port": "Port",
+    "databaseName": "Database Name",
+    "username": "Username",
+    "password": "Password",
+    "connectionOptions": "Connection Options",
+    "sslEnabled": "Enable SSL",
+    "timeout": "Timeout (seconds)",
+    "testConnection": "Test Connection",
+    "create": "Create",
+    "update": "Update",
+    "cancel": "Cancel",
+    "keepPassword": "Leave empty to keep current password",
+    "salesforceHelper": "Required: client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET",
+    "jdbcHelper": "Additional JDBC parameters (e.g., useUnicode=true&characterEncoding=UTF-8)",
+    "salesforceInstanceHelper": "e.g., login.salesforce.com or test.salesforce.com"
+  },
+  "workspace": {
+    "tables": "Tables",
+    "tableStructure": "Table Structure",
+    "data": "Data",
+    "sqlEditor": "SQL Editor",
+    "selectTable": "Select a table from the left sidebar",
+    "schema": "Schema",
+    "allSchemas": "All Schemas",
+    "searchTables": "Search tables...",
+    "tablesFound": "table(s) found",
+    "noTablesFound": "No tables found",
+    "rows": "rows"
+  },
+  "dataGrid": {
+    "loading": "Loading data...",
+    "noData": "No data available",
+    "rowsPerPage": "Rows per page",
+    "page": "Page"
+  },
+  "sqlEditor": {
+    "execute": "Execute",
+    "clear": "Clear",
+    "queryPlaceholder": "Enter your SQL query here...",
+    "executionTime": "Execution time",
+    "rowsAffected": "row(s) affected",
+    "rowsReturned": "row(s) returned"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "back": "Back"
+  }
+}

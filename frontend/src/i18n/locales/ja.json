@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "ユニバーサルデータベースマネージャー"
+  },
+  "connections": {
+    "title": "データベース接続",
+    "newConnection": "新規接続",
+    "noConnections": "接続がありません",
+    "createFirst": "最初のデータベース接続を作成してください",
+    "createConnection": "接続を作成",
+    "editConnection": "接続を編集",
+    "deleteConfirm": "この接続を削除してもよろしいですか？",
+    "connect": "接続",
+    "test": "テスト"
+  },
+  "connectionForm": {
+    "connectionName": "接続名",
+    "databaseType": "データベースタイプ",
+    "host": "ホスト",
+    "instanceUrl": "インスタンスURL",
+    "port": "ポート",
+    "databaseName": "データベース名",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "connectionOptions": "接続オプション",
+    "sslEnabled": "SSL有効化",
+    "timeout": "タイムアウト（秒）",
+    "testConnection": "接続テスト",
+    "create": "作成",
+    "update": "更新",
+    "cancel": "キャンセル",
+    "keepPassword": "現在のパスワードを維持する場合は空欄のままにしてください",
+    "salesforceHelper": "必須: client_id=コンシューマーキー;client_secret=コンシューマーシークレット",
+    "jdbcHelper": "追加のJDBCパラメータ（例: useUnicode=true&characterEncoding=UTF-8）",
+    "salesforceInstanceHelper": "例: login.salesforce.com または test.salesforce.com"
+  },
+  "workspace": {
+    "tables": "テーブル",
+    "tableStructure": "テーブル構造",
+    "data": "データ",
+    "sqlEditor": "SQLエディタ",
+    "selectTable": "左側からテーブルを選択してください",
+    "schema": "スキーマ",
+    "allSchemas": "全てのスキーマ",
+    "searchTables": "テーブルを検索...",
+    "tablesFound": "個のテーブルが見つかりました",
+    "noTablesFound": "テーブルが見つかりません",
+    "rows": "行"
+  },
+  "dataGrid": {
+    "loading": "データを読み込み中...",
+    "noData": "データがありません",
+    "rowsPerPage": "ページあたりの行数",
+    "page": "ページ"
+  },
+  "sqlEditor": {
+    "execute": "実行",
+    "clear": "クリア",
+    "queryPlaceholder": "SQLクエリを入力してください...",
+    "executionTime": "実行時間",
+    "rowsAffected": "行が影響を受けました",
+    "rowsReturned": "行が返されました"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "back": "戻る"
+  }
+}

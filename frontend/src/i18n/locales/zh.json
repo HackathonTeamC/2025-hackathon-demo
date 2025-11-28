@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "通用数据库管理器"
+  },
+  "connections": {
+    "title": "数据库连接",
+    "newConnection": "新建连接",
+    "noConnections": "暂无连接",
+    "createFirst": "创建您的第一个数据库连接以开始使用",
+    "createConnection": "创建连接",
+    "editConnection": "编辑连接",
+    "deleteConfirm": "确定要删除此连接吗？",
+    "connect": "连接",
+    "test": "测试"
+  },
+  "connectionForm": {
+    "connectionName": "连接名称",
+    "databaseType": "数据库类型",
+    "host": "主机",
+    "instanceUrl": "实例URL",
+    "port": "端口",
+    "databaseName": "数据库名称",
+    "username": "用户名",
+    "password": "密码",
+    "connectionOptions": "连接选项",
+    "sslEnabled": "启用SSL",
+    "timeout": "超时时间（秒）",
+    "testConnection": "测试连接",
+    "create": "创建",
+    "update": "更新",
+    "cancel": "取消",
+    "keepPassword": "留空以保留当前密码",
+    "salesforceHelper": "必需：client_id=您的消费者密钥;client_secret=您的消费者密码",
+    "jdbcHelper": "附加JDBC参数（例如：useUnicode=true&characterEncoding=UTF-8）",
+    "salesforceInstanceHelper": "例如：login.salesforce.com 或 test.salesforce.com"
+  },
+  "workspace": {
+    "tables": "表",
+    "tableStructure": "表结构",
+    "data": "数据",
+    "sqlEditor": "SQL编辑器",
+    "selectTable": "从左侧边栏选择一个表",
+    "schema": "模式",
+    "allSchemas": "所有模式",
+    "searchTables": "搜索表...",
+    "tablesFound": "个表",
+    "noTablesFound": "未找到表",
+    "rows": "行"
+  },
+  "dataGrid": {
+    "loading": "正在加载数据...",
+    "noData": "无可用数据",
+    "rowsPerPage": "每页行数",
+    "page": "页"
+  },
+  "sqlEditor": {
+    "execute": "执行",
+    "clear": "清除",
+    "queryPlaceholder": "在此输入您的SQL查询...",
+    "executionTime": "执行时间",
+    "rowsAffected": "行受影响",
+    "rowsReturned": "行返回"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "back": "返回"
+  }
+}

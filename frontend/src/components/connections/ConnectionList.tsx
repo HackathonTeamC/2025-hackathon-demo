@@ -19,12 +19,15 @@ import { Add, Delete, Edit, Link as LinkIcon, CheckCircle, Error } from '@mui/ic
 import { ConnectionResponse } from '../../types';
 import { connectionApi } from '../../services/api';
 import ConnectionForm from './ConnectionForm';
+import LanguageSwitcher from '../LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 interface ConnectionListProps {
   onSelectConnection: (connection: ConnectionResponse) => void;
 }
 
 const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) => {
+  const { t } = useTranslation();
   const [connections, setConnections] = useState<ConnectionResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,14 +110,17 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
   return (
     <Box p={3}>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Database Connections</Typography>
-        <Button
-          variant="contained"
-          startIcon={<Add />}
-          onClick={() => handleOpenDialog()}
-        >
-          New Connection
-        </Button>
+        <Typography variant="h4">{t('connections.title')}</Typography>
+        <Box display="flex" gap={2} alignItems="center">
+          <LanguageSwitcher />
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => handleOpenDialog()}
+          >
+            {t('connections.newConnection')}
+          </Button>
+        </Box>
       </Box>
 
       {error && (
