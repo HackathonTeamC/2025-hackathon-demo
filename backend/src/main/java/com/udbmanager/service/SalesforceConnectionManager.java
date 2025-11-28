@@ -100,6 +100,11 @@ public class SalesforceConnectionManager {
             log.info("Salesforce authentication successful for: {}", dbConnection.getConnectionName());
             return session;
 
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            String errorDetails = e.getResponseBodyAsString();
+            log.error("Failed to authenticate with Salesforce. Status: {}, Response: {}", e.getStatusCode(), errorDetails);
+            throw new DatabaseConnectionException(
+                "Failed to authenticate with Salesforce (HTTP " + e.getStatusCode() + "): " + errorDetails, e);
         } catch (Exception e) {
             log.error("Failed to authenticate with Salesforce", e);
             throw new DatabaseConnectionException("Failed to authenticate with Salesforce: " + e.getMessage(), e);
