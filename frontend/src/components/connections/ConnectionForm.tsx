@@ -227,7 +227,13 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
         value={formData.password}
         onChange={handleChange}
         margin="normal"
-        helperText={connection ? 'Leave empty to keep current password' : ''}
+        helperText={
+          connection 
+            ? 'Leave empty to keep current password' 
+            : formData.databaseType === DatabaseType.SALESFORCE
+              ? 'Enter: YourPassword + SecurityToken (concatenated, no space)'
+              : ''
+        }
       />
 
       <TextField
@@ -237,10 +243,9 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
         value={formData.connectionOptions}
         onChange={handleChange}
         margin="normal"
-        required={formData.databaseType === DatabaseType.SALESFORCE}
         helperText={
           formData.databaseType === DatabaseType.SALESFORCE
-            ? "Required: client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET"
+            ? "Optional: Additional connection parameters (e.g., api_version=v57.0)"
             : "Additional JDBC parameters (e.g., useUnicode=true&characterEncoding=UTF-8)"
         }
       />

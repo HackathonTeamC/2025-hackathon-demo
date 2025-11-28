@@ -142,37 +142,24 @@ start-frontend.bat
 4. 「Create」で保存
 
 #### Salesforce 接続
+
+**簡単！OAuth Connected App は不要です**
+
 1. トップページで「New Connection」ボタンをクリック
 2. データベースタイプで「Salesforce」を選択
 3. 接続情報を入力:
    - **接続名**: 任意の名前
    - **Instance URL**: `login.salesforce.com` (本番環境) または `test.salesforce.com` (Sandbox)
    - **ユーザー名**: Salesforce ログインユーザー名
-   - **パスワード**: Salesforce パスワード + セキュリティトークン（連結して入力）
+   - **パスワード**: Salesforce パスワード + セキュリティトークン（連結して入力、スペースなし）
      - 例: パスワードが `MyPass123` でセキュリティトークンが `abc123xyz` の場合 → `MyPass123abc123xyz`
      - セキュリティトークンは Salesforce 設定の「私の個人情報 → 私のセキュリティトークンのリセット」で取得できます
-   - **Connection Options**: 以下の形式で入力（必須）
-     ```
-     client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET
-     ```
+   - **Connection Options**: 空欄でOK（オプション設定がある場合のみ入力）
 
-**Salesforce Connected App のセットアップ:**
-
-1. Salesforce Setup から「App Manager」を開く
-2. 「New Connected App」をクリック
-3. 必須項目を入力:
-   - Connected App Name: 任意の名前（例: UDB Manager）
-   - API Name: 自動生成される
-   - Contact Email: あなたのメールアドレス
-4. 「Enable OAuth Settings」をチェック
-5. Callback URL: `https://localhost` (このアプリでは未使用だが必須)
-6. Selected OAuth Scopes:
-   - Full access (full)
-   - Perform requests on your behalf at any time (refresh_token, offline_access)
-7. 「Save」をクリック
-8. 保存後、「Consumer Key」と「Consumer Secret」を取得
-   - 「Manage Consumer Details」で Consumer Secret を確認
-9. これらの値を Connection Options に入力
+**認証方式:**
+- SOAP Login API を使用（OAuth Connected App 不要）
+- ユーザー名、パスワード、セキュリティトークンのみで接続可能
+- CData ODBC Driver for Salesforce と同じ認証方式
 
 ### 2. データベースへの接続
 1. 接続カードの「Connect」ボタンをクリック

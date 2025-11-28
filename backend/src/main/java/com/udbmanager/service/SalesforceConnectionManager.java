@@ -51,7 +51,7 @@ public class SalesforceConnectionManager {
     }
 
     /**
-     * Authenticate with Salesforce using Username/Password flow
+     * Authenticate with Salesforce using SOAP Login API (no OAuth Connected App required)
      */
     private SalesforceSession authenticate(DatabaseConnection dbConnection, String decryptedPassword) {
         try {
@@ -60,55 +60,56 @@ public class SalesforceConnectionManager {
                 loginUrl = "https://" + loginUrl;
             }
             
-            // Parse connection options for OAuth credentials
-            String clientId = extractOption(dbConnection.getConnectionOptions(), "client_id");
-            String clientSecret = extractOption(dbConnection.getConnectionOptions(), "client_secret");
+            log.info("Attempting Salesforce SOAP login - URL: {}, Username: {}", loginUrl, dbConnection.getUsername());
             
-            if (clientId == null || clientSecret == null) {
-                throw new DatabaseConnectionException(
-                    "Salesforce connection requires 'client_id' and 'client_secret' in connection options. " +
-                    "Format: client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET"
-                );
-            }
+            // Use SOAP login API - no Connected App required
+            String soapEndpoint = loginUrl + "/services/Soap/u/57.0";
             
-            // Debug log (mask sensitive data)
-            log.info("Salesforce OAuth attempt - URL: {}, Username: {}, ClientID prefix: {}..., Password length: {}, ClientSecret length: {}", 
-                loginUrl, 
-                dbConnection.getUsername(), 
-                clientId.length() > 10 ? clientId.substring(0, 10) : clientId,
-                decryptedPassword != null ? decryptedPassword.length() : 0,
-                clientSecret != null ? clientSecret.length() : 0
-            );
+            // Build SOAP login request
+            String soapRequest = buildSoapLoginRequest(dbConnection.getUsername(), decryptedPassword);
             
-            // OAuth 2.0 Username-Password flow
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            formData.add("grant_type", "password");
-            formData.add("client_id", clientId);
-            formData.add("client_secret", clientSecret);
-            formData.add("username", dbConnection.getUsername());
-            formData.add("password", decryptedPassword);
-
-            String authEndpoint = loginUrl + "/services/oauth2/token";
-            
-            JsonNode response = webClient.post()
-                    .uri(authEndpoint)
-                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(BodyInserters.fromFormData(formData))
+            String soapResponse = webClient.post()
+                    .uri(soapEndpoint)
+                    .contentType(MediaType.TEXT_XML)
+                    .header("SOAPAction", "login")
+                    .bodyValue(soapRequest)
                     .retrieve()
-                    .bodyToMono(JsonNode.class)
+                    .bodyToMono(String.class)
                     .block();
 
-            if (response == null) {
-                throw new DatabaseConnectionException("Failed to authenticate with Salesforce");
+            if (soapResponse == null) {
+                throw new DatabaseConnectionException("Failed to authenticate with Salesforce - no response");
             }
 
-            SalesforceSession session = new SalesforceSession();
-            session.setAccessToken(response.get("access_token").asText());
-            session.setInstanceUrl(response.get("instance_url").asText());
+            // Parse SOAP response to extract sessionId and serverUrl
+            String sessionId = extractXmlValue(soapResponse, "sessionId");
+            String serverUrl = extractXmlValue(soapResponse, "serverUrl");
+            
+            if (sessionId == null || serverUrl == null) {
+                // Check for fault
+                String faultCode = extractXmlValue(soapResponse, "faultcode");
+                String faultString = extractXmlValue(soapResponse, "faultstring");
+                
+                if (faultString != null) {
+                    throw new DatabaseConnectionException("Salesforce authentication failed: " + faultString);
+                }
+                
+                log.error("Failed to parse Salesforce SOAP response. Response: {}", soapResponse);
+                throw new DatabaseConnectionException("Failed to parse Salesforce login response");
+            }
 
-            log.info("Salesforce authentication successful for: {}", dbConnection.getConnectionName());
+            // Extract instance URL from serverUrl
+            String instanceUrl = extractInstanceUrl(serverUrl);
+            
+            SalesforceSession session = new SalesforceSession();
+            session.setAccessToken(sessionId);
+            session.setInstanceUrl(instanceUrl);
+
+            log.info("Salesforce SOAP authentication successful for: {}", dbConnection.getConnectionName());
             return session;
 
+        } catch (DatabaseConnectionException e) {
+            throw e;
         } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
             String errorDetails = e.getResponseBodyAsString();
             log.error("Failed to authenticate with Salesforce. Status: {}, Response: {}", e.getStatusCode(), errorDetails);
@@ -118,6 +119,82 @@ public class SalesforceConnectionManager {
             log.error("Failed to authenticate with Salesforce", e);
             throw new DatabaseConnectionException("Failed to authenticate with Salesforce: " + e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Build SOAP login request XML
+     */
+    private String buildSoapLoginRequest(String username, String password) {
+        return "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+                "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" " +
+                "xmlns:urn=\"urn:partner.soap.sforce.com\">" +
+                "<soapenv:Body>" +
+                "<urn:login>" +
+                "<urn:username>" + escapeXml(username) + "</urn:username>" +
+                "<urn:password>" + escapeXml(password) + "</urn:password>" +
+                "</urn:login>" +
+                "</soapenv:Body>" +
+                "</soapenv:Envelope>";
+    }
+    
+    /**
+     * Extract value from XML response (simple parser)
+     */
+    private String extractXmlValue(String xml, String tagName) {
+        String startTag = "<" + tagName + ">";
+        String endTag = "</" + tagName + ">";
+        
+        int startIndex = xml.indexOf(startTag);
+        if (startIndex == -1) {
+            // Try with namespace
+            startTag = ":" + tagName + ">";
+            startIndex = xml.indexOf(startTag);
+            if (startIndex == -1) {
+                return null;
+            }
+            startIndex = startIndex + startTag.length();
+        } else {
+            startIndex = startIndex + startTag.length();
+        }
+        
+        int endIndex = xml.indexOf(endTag, startIndex);
+        if (endIndex == -1) {
+            return null;
+        }
+        
+        return xml.substring(startIndex, endIndex);
+    }
+    
+    /**
+     * Extract instance URL from server URL
+     */
+    private String extractInstanceUrl(String serverUrl) {
+        // serverUrl format: https://na1.salesforce.com/services/Soap/u/57.0/00D...
+        // We need: https://na1.salesforce.com
+        try {
+            int idx = serverUrl.indexOf("/services/");
+            if (idx > 0) {
+                return serverUrl.substring(0, idx);
+            }
+            return serverUrl;
+        } catch (Exception e) {
+            log.warn("Failed to extract instance URL from: {}", serverUrl);
+            return serverUrl;
+        }
+    }
+    
+    /**
+     * Escape XML special characters
+     */
+    private String escapeXml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&apos;");
     }
 
     /**
