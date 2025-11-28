@@ -76,6 +76,10 @@ public class SalesforceDataService {
                 }
             }
             
+            // Log field count for debugging
+            log.info("Retrieved {} fields for Salesforce object: {}", fields.size(), objectName);
+            log.debug("Fields: {}", fields);
+            
             // Build SOQL query
             StringBuilder soql = new StringBuilder("SELECT ");
             soql.append(String.join(", ", fields));
@@ -106,8 +110,15 @@ public class SalesforceDataService {
             soql.append(" LIMIT ").append(request.getSize());
             soql.append(" OFFSET ").append(offset);
             
+            // Log the SOQL query for debugging
+            log.info("Executing SOQL: {}", soql.toString());
+            
             // Execute query
             JsonNode response = salesforceConnectionManager.executeQuery(session, soql.toString());
+            
+            // Log response for debugging
+            log.debug("SOQL Response: {}", response);
+            log.info("Records returned: {}", response.get("records") != null ? response.get("records").size() : 0);
             
             // Convert to response format
             List<Map<String, Object>> data = convertRecords(response.get("records"));
