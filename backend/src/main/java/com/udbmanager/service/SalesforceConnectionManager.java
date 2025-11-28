@@ -60,15 +60,25 @@ public class SalesforceConnectionManager {
                 loginUrl = "https://" + loginUrl;
             }
             
+            // Parse connection options for OAuth credentials
+            String clientId = extractOption(dbConnection.getConnectionOptions(), "client_id");
+            String clientSecret = extractOption(dbConnection.getConnectionOptions(), "client_secret");
+            
+            if (clientId == null || clientSecret == null) {
+                throw new DatabaseConnectionException(
+                    "Salesforce connection requires 'client_id' and 'client_secret' in connection options. " +
+                    "Format: client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET"
+                );
+            }
+            
             // OAuth 2.0 Username-Password flow
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
             formData.add("grant_type", "password");
-            formData.add("client_id", "3MVG9_XwsqeYoue_your_consumer_key"); // Placeholder
-            formData.add("client_secret", "your_consumer_secret"); // Placeholder
+            formData.add("client_id", clientId);
+            formData.add("client_secret", clientSecret);
             formData.add("username", dbConnection.getUsername());
             formData.add("password", decryptedPassword);
 
-            // For now, use SOAP login endpoint as fallback
             String authEndpoint = loginUrl + "/services/oauth2/token";
             
             JsonNode response = webClient.post()
@@ -198,5 +208,24 @@ public class SalesforceConnectionManager {
     public void closeAllConnections() {
         sessionCache.clear();
         log.info("All Salesforce sessions closed");
+    }
+
+    /**
+     * Extract option value from connection options string
+     * Format: key1=value1;key2=value2
+     */
+    private String extractOption(String connectionOptions, String key) {
+        if (connectionOptions == null || connectionOptions.isEmpty()) {
+            return null;
+        }
+        
+        String[] options = connectionOptions.split(";");
+        for (String option : options) {
+            String[] keyValue = option.split("=", 2);
+            if (keyValue.length == 2 && keyValue[0].trim().equals(key)) {
+                return keyValue[1].trim();
+            }
+        }
+        return null;
     }
 }

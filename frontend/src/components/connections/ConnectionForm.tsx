@@ -175,33 +175,38 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
       <TextField
         fullWidth
         required
-        label="Host"
+        label={formData.databaseType === DatabaseType.SALESFORCE ? "Instance URL" : "Host"}
         name="host"
         value={formData.host}
         onChange={handleChange}
         margin="normal"
+        helperText={formData.databaseType === DatabaseType.SALESFORCE ? "e.g., login.salesforce.com or test.salesforce.com" : ""}
       />
 
-      <TextField
-        fullWidth
-        required
-        type="number"
-        label="Port"
-        name="port"
-        value={formData.port}
-        onChange={handleChange}
-        margin="normal"
-      />
+      {formData.databaseType !== DatabaseType.SALESFORCE && (
+        <TextField
+          fullWidth
+          required
+          type="number"
+          label="Port"
+          name="port"
+          value={formData.port}
+          onChange={handleChange}
+          margin="normal"
+        />
+      )}
 
-      <TextField
-        fullWidth
-        required
-        label="Database Name"
-        name="databaseName"
-        value={formData.databaseName}
-        onChange={handleChange}
-        margin="normal"
-      />
+      {formData.databaseType !== DatabaseType.SALESFORCE && (
+        <TextField
+          fullWidth
+          required
+          label="Database Name"
+          name="databaseName"
+          value={formData.databaseName}
+          onChange={handleChange}
+          margin="normal"
+        />
+      )}
 
       <TextField
         fullWidth
@@ -232,7 +237,12 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
         value={formData.connectionOptions}
         onChange={handleChange}
         margin="normal"
-        helperText="Additional JDBC parameters (e.g., useUnicode=true&characterEncoding=UTF-8)"
+        required={formData.databaseType === DatabaseType.SALESFORCE}
+        helperText={
+          formData.databaseType === DatabaseType.SALESFORCE
+            ? "Required: client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET"
+            : "Additional JDBC parameters (e.g., useUnicode=true&characterEncoding=UTF-8)"
+        }
       />
 
       <FormControlLabel

@@ -30,10 +30,10 @@ public class DatabaseConnection {
     @Column(nullable = false)
     private String host;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer port;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String databaseName;
 
     @Column(nullable = false)

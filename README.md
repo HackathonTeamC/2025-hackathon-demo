@@ -15,6 +15,7 @@
 - ✅ **エンタープライズデータベース対応**
   - Oracle Database 対応
   - Microsoft SQL Server 対応
+  - Salesforce 対応（REST API + SOQL）
   - データベース固有の接続文字列フォーマットに対応
 
 - ✅ **メタデータ閲覧**
@@ -126,10 +127,12 @@ start-frontend.bat
 ## 📖 使い方
 
 ### 1. データベース接続の作成
+
+#### 通常のデータベース (MySQL/PostgreSQL/Oracle/SQL Server など)
 1. トップページで「New Connection」ボタンをクリック
 2. 接続情報を入力:
    - 接続名
-   - データベースタイプ (MySQL/PostgreSQL/SQLite/H2)
+   - データベースタイプ (MySQL/PostgreSQL/SQLite/H2/Oracle/SQL Server)
    - ホスト名
    - ポート番号
    - データベース名
@@ -137,6 +140,37 @@ start-frontend.bat
    - パスワード
 3. 「Test Connection」で接続確認
 4. 「Create」で保存
+
+#### Salesforce 接続
+1. トップページで「New Connection」ボタンをクリック
+2. データベースタイプで「Salesforce」を選択
+3. 接続情報を入力:
+   - **接続名**: 任意の名前
+   - **Instance URL**: `login.salesforce.com` (本番環境) または `test.salesforce.com` (Sandbox)
+   - **ユーザー名**: Salesforce ログインユーザー名
+   - **パスワード**: Salesforce パスワード（セキュリティトークンは不要）
+   - **Connection Options**: 以下の形式で入力（必須）
+     ```
+     client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET
+     ```
+
+**Salesforce Connected App のセットアップ:**
+
+1. Salesforce Setup から「App Manager」を開く
+2. 「New Connected App」をクリック
+3. 必須項目を入力:
+   - Connected App Name: 任意の名前（例: UDB Manager）
+   - API Name: 自動生成される
+   - Contact Email: あなたのメールアドレス
+4. 「Enable OAuth Settings」をチェック
+5. Callback URL: `https://localhost` (このアプリでは未使用だが必須)
+6. Selected OAuth Scopes:
+   - Full access (full)
+   - Perform requests on your behalf at any time (refresh_token, offline_access)
+7. 「Save」をクリック
+8. 保存後、「Consumer Key」と「Consumer Secret」を取得
+   - 「Manage Consumer Details」で Consumer Secret を確認
+9. これらの値を Connection Options に入力
 
 ### 2. データベースへの接続
 1. 接続カードの「Connect」ボタンをクリック
@@ -220,7 +254,7 @@ udb-manager/
 - クエリ履歴・ブックマーク機能
 - データエクスポート（CSV/JSON/Excel）
 - クエリビルダー（GUI ベースのクエリ作成）
-- MongoDB, Snowflake, Salesforce 対応
+- MongoDB, Snowflake 対応
 - ER図の自動生成
 - パフォーマンス監視・チューニング支援
 
@@ -242,9 +276,9 @@ SWE Agent
 | H2 | ✅ Phase 1 | 9092 | 組み込み/サーバーモード |
 | Oracle Database | ✅ Phase 2 | 1521 | SID形式: `ORCL` または Service Name形式: `/XEPDB1` |
 | Microsoft SQL Server | ✅ Phase 2 | 1433 | SSL暗号化対応 |
+| Salesforce | ✅ Phase 2 | - | REST API + SOQL、OAuth 2.0認証 |
 | MongoDB | 🔜 Phase 3 | 27017 | 予定 |
 | Snowflake | 🔜 Phase 3 | - | 予定 |
-| Salesforce | 🔜 Phase 3 | - | 予定 |
 
 ---
 
