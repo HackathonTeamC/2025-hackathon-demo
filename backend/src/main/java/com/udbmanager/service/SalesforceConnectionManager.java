@@ -24,7 +24,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class SalesforceConnectionManager {
 
     private final Map<String, SalesforceSession> sessionCache = new ConcurrentHashMap<>();
-    private final WebClient webClient = WebClient.builder().build();
+    private final WebClient webClient = WebClient.builder()
+            .codecs(configurer -> configurer
+                    .defaultCodecs()
+                    .maxInMemorySize(10 * 1024 * 1024)) // 10MB buffer for large Salesforce responses
+            .build();
 
     @Data
     public static class SalesforceSession {
