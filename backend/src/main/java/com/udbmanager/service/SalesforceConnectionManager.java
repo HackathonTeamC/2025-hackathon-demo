@@ -98,8 +98,12 @@ public class SalesforceConnectionManager {
                 throw new DatabaseConnectionException("Failed to parse Salesforce login response");
             }
 
+            log.debug("Extracted serverUrl from SOAP response: {}", serverUrl);
+            
             // Extract instance URL from serverUrl
             String instanceUrl = extractInstanceUrl(serverUrl);
+            
+            log.info("Extracted instanceUrl: {}", instanceUrl);
             
             SalesforceSession session = new SalesforceSession();
             session.setAccessToken(sessionId);
@@ -162,7 +166,8 @@ public class SalesforceConnectionManager {
             return null;
         }
         
-        return xml.substring(startIndex, endIndex);
+        String value = xml.substring(startIndex, endIndex);
+        return value != null ? value.trim() : null;
     }
     
     /**
@@ -172,14 +177,25 @@ public class SalesforceConnectionManager {
         // serverUrl format: https://na1.salesforce.com/services/Soap/u/57.0/00D...
         // We need: https://na1.salesforce.com
         try {
-            int idx = serverUrl.indexOf("/services/");
-            if (idx > 0) {
-                return serverUrl.substring(0, idx);
+            if (serverUrl == null) {
+                return null;
             }
-            return serverUrl;
+            
+            String trimmedUrl = serverUrl.trim();
+            log.debug("Extracting instance URL from: '{}'", trimmedUrl);
+            
+            int idx = trimmedUrl.indexOf("/services/");
+            if (idx > 0) {
+                String instanceUrl = trimmedUrl.substring(0, idx);
+                log.debug("Extracted instance URL: '{}'", instanceUrl);
+                return instanceUrl;
+            }
+            
+            log.debug("No '/services/' found, returning original URL: '{}'", trimmedUrl);
+            return trimmedUrl;
         } catch (Exception e) {
-            log.warn("Failed to extract instance URL from: {}", serverUrl);
-            return serverUrl;
+            log.warn("Failed to extract instance URL from: {}", serverUrl, e);
+            return serverUrl != null ? serverUrl.trim() : null;
         }
     }
     
@@ -204,14 +220,15 @@ public class SalesforceConnectionManager {
         try {
             SalesforceSession session = authenticate(dbConnection, decryptedPassword);
             
+            log.info("Testing connection with instanceUrl: {}", session.getInstanceUrl());
+            
             // Test with a simple query
-            String queryUrl = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() + "/query";
+            String queryUrl = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() + "/query?q=SELECT+Id+FROM+User+LIMIT+1";
+            
+            log.debug("Test query URL: {}", queryUrl);
             
             webClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(queryUrl)
-                            .queryParam("q", "SELECT Id FROM User LIMIT 1")
-                            .build())
+                    .uri(queryUrl)
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + session.getAccessToken())
                     .retrieve()
                     .bodyToMono(String.class)
@@ -229,11 +246,13 @@ public class SalesforceConnectionManager {
      */
     public JsonNode executeQuery(SalesforceSession session, String soql) {
         try {
-            String queryUrl = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() + "/query";
+            String baseUrl = session.getInstanceUrl() + "/services/data/" + session.getApiVersion() + "/query";
             
             return webClient.get()
                     .uri(uriBuilder -> uriBuilder
-                            .path(queryUrl)
+                            .scheme("https")
+                            .host(extractHost(session.getInstanceUrl()))
+                            .path("/services/data/" + session.getApiVersion() + "/query")
                             .queryParam("q", soql)
                             .build())
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + session.getAccessToken())
@@ -243,6 +262,22 @@ public class SalesforceConnectionManager {
         } catch (Exception e) {
             log.error("Failed to execute SOQL query", e);
             throw new DatabaseConnectionException("Failed to execute SOQL query: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Extract host from full URL
+     */
+    private String extractHost(String url) {
+        try {
+            if (url.startsWith("https://")) {
+                return url.substring(8);
+            } else if (url.startsWith("http://")) {
+                return url.substring(7);
+            }
+            return url;
+        } catch (Exception e) {
+            return url;
         }
     }
 
