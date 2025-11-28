@@ -120,12 +120,11 @@ class CalendarClient:
             'conferenceData': {
                 'createRequest': {
                     'requestId': str(uuid.uuid4())
-                    # conferenceSolutionKeyは省略（デフォルトでGoogle Meetが使用される）
                 }
             }
         }
         
-        # 共有カレンダーの場合は参加者を招待できる
+        # 参加者をevent内に追加（必須）
         if attendees:
             event['attendees'] = [{'email': email} for email in attendees if email]
             event['guestsCanModify'] = False
@@ -140,17 +139,27 @@ class CalendarClient:
                 calendarId=self.calendar_id,
                 body=event,
                 sendUpdates='none',
-                conferenceDataVersion=1
+                conferenceDataVersion=1  # パラメータとして渡す（event内ではない）
             ).execute()
+            
+            # デバッグ: レスポンスから参加者情報を確認
+            print(f"Created event attendees: {created_event.get('attendees', [])}")
             
             # 作成レスポンスからMeetリンクを取得
             meet_link = None
-            if 'conferenceData' in created_event:
+            if 'hangoutLink' in created_event:
+                meet_link = created_event['hangoutLink']
+            elif 'conferenceData' in created_event:
                 entry_points = created_event['conferenceData'].get('entryPoints', [])
                 for entry_point in entry_points:
                     if entry_point.get('entryPointType') == 'video':
                         meet_link = entry_point.get('uri')
                         break
+            
+            # 参加者情報を取得
+            attendee_list = []
+            if 'attendees' in created_event:
+                attendee_list = [a.get('email', '') for a in created_event['attendees']]
             
             return {
                 'id': created_event['id'],
@@ -158,9 +167,14 @@ class CalendarClient:
                 'summary': created_event.get('summary', ''),
                 'start': created_event['start'].get('dateTime', ''),
                 'end': created_event['end'].get('dateTime', ''),
-                'meet_link': meet_link
+                'meet_link': meet_link,
+                'attendees': attendee_list
             }
         except HttpError as error:
+            # エラー詳細をログ出力
+            print(f"Error creating event: {error}")
+            print(f"Error details: {error.error_details if hasattr(error, 'error_details') else 'N/A'}")
+            
             # 403エラーが発生した場合は、参加者なしで再試行
             if 'forbiddenForServiceAccounts' in str(error) and attendees:
                 # 参加者情報をdescriptionに含めるフォールバック
@@ -175,9 +189,11 @@ class CalendarClient:
                     conferenceDataVersion=1
                 ).execute()
                 
-                # 作成レスポンスからMeetリンクを取得
+                # Meetリンクを取得
                 meet_link = None
-                if 'conferenceData' in created_event:
+                if 'hangoutLink' in created_event:
+                    meet_link = created_event['hangoutLink']
+                elif 'conferenceData' in created_event:
                     entry_points = created_event['conferenceData'].get('entryPoints', [])
                     for entry_point in entry_points:
                         if entry_point.get('entryPointType') == 'video':
@@ -190,7 +206,8 @@ class CalendarClient:
                     'summary': created_event.get('summary', ''),
                     'start': created_event['start'].get('dateTime', ''),
                     'end': created_event['end'].get('dateTime', ''),
-                    'meet_link': meet_link
+                    'meet_link': meet_link,
+                    'attendees': []
                 }
             raise Exception(f"Failed to create event: {error}")
     
