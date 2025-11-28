@@ -43,6 +43,9 @@ public class SalesforceDataService {
                 throw new DatabaseConnectionException("Failed to describe object: " + objectName);
             }
             
+            // Log describe response for debugging
+            log.debug("Describe response for {}: {}", objectName, objectDescribe.toPrettyString());
+            
             // Check if object is queryable
             JsonNode queryableNode = objectDescribe.get("queryable");
             if (queryableNode != null && !queryableNode.asBoolean()) {
@@ -55,25 +58,47 @@ public class SalesforceDataService {
             
             JsonNode fieldsArray = objectDescribe.get("fields");
             if (fieldsArray != null && fieldsArray.isArray()) {
+                int skippedCount = 0;
                 for (JsonNode field : fieldsArray) {
                     if (fields.size() >= 20) break; // Limit fields
                     
                     JsonNode nameNode = field.get("name");
                     JsonNode accessibleNode = field.get("accessible");
                     
-                    if (nameNode == null || accessibleNode == null) {
-                        continue; // Skip fields without name or accessible info
+                    if (nameNode == null) {
+                        log.debug("Skipping field without name: {}", field);
+                        skippedCount++;
+                        continue;
+                    }
+                    
+                    if (accessibleNode == null) {
+                        log.debug("Skipping field {} without accessible flag", nameNode.asText());
+                        skippedCount++;
+                        continue;
                     }
                     
                     String fieldName = nameNode.asText();
                     boolean isAccessible = accessibleNode.asBoolean();
                     boolean isCompound = field.has("compoundFieldName") && !field.get("compoundFieldName").isNull();
                     
+                    if (!isAccessible) {
+                        log.debug("Skipping inaccessible field: {}", fieldName);
+                        skippedCount++;
+                        continue;
+                    }
+                    
+                    if (isCompound) {
+                        log.debug("Skipping compound field: {}", fieldName);
+                        skippedCount++;
+                        continue;
+                    }
+                    
                     // Include accessible, non-compound fields
-                    if (isAccessible && !isCompound && !fieldName.equals("Id")) {
+                    if (!fieldName.equals("Id")) {
                         fields.add(fieldName);
                     }
                 }
+                log.info("Processed {} fields, skipped {} fields", fieldsArray.size(), skippedCount);
             }
             
             // Log field count for debugging
