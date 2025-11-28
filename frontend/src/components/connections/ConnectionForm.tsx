@@ -57,7 +57,7 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
   }, [connection]);
 
   useEffect(() => {
-    // Update default port based on database type
+    // Update defaults based on database type
     const defaultPorts: Record<DatabaseType, number> = {
       [DatabaseType.MYSQL]: 3306,
       [DatabaseType.POSTGRESQL]: 5432,
@@ -69,7 +69,17 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
     };
     
     if (!connection) {
-      setFormData((prev) => ({ ...prev, port: defaultPorts[prev.databaseType] }));
+      if (formData.databaseType === DatabaseType.SALESFORCE) {
+        // For Salesforce, clear port and databaseName, set default host
+        setFormData((prev) => ({ 
+          ...prev, 
+          host: prev.host === 'localhost' ? 'login.salesforce.com' : prev.host,
+          port: 443,
+          databaseName: ''
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, port: defaultPorts[prev.databaseType] }));
+      }
     }
   }, [formData.databaseType, connection]);
 
@@ -111,10 +121,15 @@ const ConnectionForm: React.FC<ConnectionFormProps> = ({ connection, onSuccess, 
     setError(null);
 
     try {
+      // For Salesforce, ensure port and databaseName are not sent or are empty
+      const dataToSubmit = formData.databaseType === DatabaseType.SALESFORCE
+        ? { ...formData, port: 443, databaseName: '' }
+        : formData;
+
       if (connection) {
-        await connectionApi.update(connection.id, formData);
+        await connectionApi.update(connection.id, dataToSubmit);
       } else {
-        await connectionApi.create(formData);
+        await connectionApi.create(dataToSubmit);
       }
       onSuccess();
     } catch (err: any) {

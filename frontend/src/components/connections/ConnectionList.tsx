@@ -170,7 +170,10 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
                     <Chip label={connection.databaseType} size="small" color="primary" sx={{ mb: 1 }} />
 
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                      {connection.host}:{connection.port}/{connection.databaseName}
+                      {connection.databaseType === 'SALESFORCE' 
+                        ? connection.host
+                        : `${connection.host}:${connection.port}${connection.databaseName ? '/' + connection.databaseName : ''}`
+                      }
                     </Typography>
 
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
