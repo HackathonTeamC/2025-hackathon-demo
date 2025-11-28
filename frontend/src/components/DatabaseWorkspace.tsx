@@ -96,12 +96,14 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
         anchor="left"
         open={drawerOpen}
         sx={{
-          width: 300,
+          width: 280,
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: 300,
+            width: 280,
             boxSizing: 'border-box',
-            mt: '48px'
+            mt: '48px',
+            borderRight: '1px solid',
+            borderColor: 'divider'
           }
         }}
       >
@@ -124,8 +126,8 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
           flexGrow: 1,
           p: 1,
           mt: '48px',
-          width: drawerOpen ? `calc(100% - 300px)` : '100%',
-          ml: drawerOpen ? '300px' : 0,
+          width: drawerOpen ? `calc(100% - 280px)` : '100%',
+          ml: drawerOpen ? 0 : 0,
           transition: (theme) =>
             theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.sharp,
