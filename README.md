@@ -148,7 +148,9 @@ start-frontend.bat
    - **接続名**: 任意の名前
    - **Instance URL**: `login.salesforce.com` (本番環境) または `test.salesforce.com` (Sandbox)
    - **ユーザー名**: Salesforce ログインユーザー名
-   - **パスワード**: Salesforce パスワード（セキュリティトークンは不要）
+   - **パスワード**: Salesforce パスワード + セキュリティトークン（連結して入力）
+     - 例: パスワードが `MyPass123` でセキュリティトークンが `abc123xyz` の場合 → `MyPass123abc123xyz`
+     - セキュリティトークンは Salesforce 設定の「私の個人情報 → 私のセキュリティトークンのリセット」で取得できます
    - **Connection Options**: 以下の形式で入力（必須）
      ```
      client_id=YOUR_CONSUMER_KEY;client_secret=YOUR_CONSUMER_SECRET
