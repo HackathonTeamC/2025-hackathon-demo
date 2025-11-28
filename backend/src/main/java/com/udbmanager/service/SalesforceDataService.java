@@ -84,15 +84,10 @@ public class SalesforceDataService {
                         continue;
                     }
                     
-                    if (accessibleNode == null) {
-                        log.info("Skipping field {} without accessible flag", nameNode.asText());
-                        missingDataCount++;
-                        skippedCount++;
-                        continue;
-                    }
-                    
                     String fieldName = nameNode.asText();
-                    boolean isAccessible = accessibleNode.asBoolean();
+                    
+                    // If accessible flag is missing (SOAP API), assume accessible
+                    boolean isAccessible = accessibleNode == null ? true : accessibleNode.asBoolean();
                     boolean isCompound = field.has("compoundFieldName") && !field.get("compoundFieldName").isNull();
                     
                     if (!isAccessible) {
