@@ -54,7 +54,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to delete this connection?')) {
+    if (!window.confirm(t('connections.deleteConfirm'))) {
       return;
     }
 
@@ -132,17 +132,17 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
       {connections.length === 0 ? (
         <Box textAlign="center" py={8}>
           <Typography variant="h6" color="textSecondary" gutterBottom>
-            No connections yet
+            {t('connections.noConnections')}
           </Typography>
           <Typography variant="body2" color="textSecondary" paragraph>
-            Create your first database connection to get started
+            {t('connections.createFirst')}
           </Typography>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => handleOpenDialog()}
           >
-            Create Connection
+            {t('connections.createConnection')}
           </Button>
         </Box>
       ) : (
@@ -198,7 +198,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
                         startIcon={<LinkIcon />}
                         onClick={() => handleConnect(connection)}
                       >
-                        Connect
+                        {t('connections.connect')}
                       </Button>
                       <Button
                         variant="outlined"
@@ -206,7 +206,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
                         fullWidth
                         onClick={() => handleTest(connection.id)}
                       >
-                        Test
+                        {t('connections.test')}
                       </Button>
                     </Box>
                   </CardContent>
@@ -219,7 +219,7 @@ const ConnectionList: React.FC<ConnectionListProps> = ({ onSelectConnection }) =
 
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {editingConnection ? 'Edit Connection' : 'New Connection'}
+          {editingConnection ? t('connections.editConnection') : t('connections.newConnection')}
         </DialogTitle>
         <DialogContent>
           <ConnectionForm
