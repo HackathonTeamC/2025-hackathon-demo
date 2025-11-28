@@ -43,8 +43,11 @@ public class SalesforceDataService {
                 throw new DatabaseConnectionException("Failed to describe object: " + objectName);
             }
             
-            // Log describe response for debugging
-            log.debug("Describe response for {}: {}", objectName, objectDescribe.toPrettyString());
+            // Log describe response for debugging (first 500 chars only)
+            String describeStr = objectDescribe.toString();
+            log.info("Describe response for {} (length={}): {}", 
+                objectName, describeStr.length(), 
+                describeStr.length() > 500 ? describeStr.substring(0, 500) + "..." : describeStr);
             
             // Check if object is queryable
             JsonNode queryableNode = objectDescribe.get("queryable");
@@ -59,20 +62,31 @@ public class SalesforceDataService {
             JsonNode fieldsArray = objectDescribe.get("fields");
             if (fieldsArray != null && fieldsArray.isArray()) {
                 int skippedCount = 0;
+                int inaccessibleCount = 0;
+                int compoundCount = 0;
+                int missingDataCount = 0;
+                
+                log.info("Total fields in describe: {}", fieldsArray.size());
+                
                 for (JsonNode field : fieldsArray) {
-                    if (fields.size() >= 20) break; // Limit fields
+                    if (fields.size() >= 20) {
+                        log.info("Reached field limit of 20, stopping");
+                        break;
+                    }
                     
                     JsonNode nameNode = field.get("name");
                     JsonNode accessibleNode = field.get("accessible");
                     
                     if (nameNode == null) {
-                        log.debug("Skipping field without name: {}", field);
+                        log.info("Skipping field without name: {}", field);
+                        missingDataCount++;
                         skippedCount++;
                         continue;
                     }
                     
                     if (accessibleNode == null) {
-                        log.debug("Skipping field {} without accessible flag", nameNode.asText());
+                        log.info("Skipping field {} without accessible flag", nameNode.asText());
+                        missingDataCount++;
                         skippedCount++;
                         continue;
                     }
@@ -82,23 +96,27 @@ public class SalesforceDataService {
                     boolean isCompound = field.has("compoundFieldName") && !field.get("compoundFieldName").isNull();
                     
                     if (!isAccessible) {
-                        log.debug("Skipping inaccessible field: {}", fieldName);
+                        inaccessibleCount++;
                         skippedCount++;
                         continue;
                     }
                     
                     if (isCompound) {
-                        log.debug("Skipping compound field: {}", fieldName);
+                        compoundCount++;
                         skippedCount++;
                         continue;
                     }
                     
                     // Include accessible, non-compound fields
                     if (!fieldName.equals("Id")) {
+                        log.info("Adding field: {}", fieldName);
                         fields.add(fieldName);
                     }
                 }
-                log.info("Processed {} fields, skipped {} fields", fieldsArray.size(), skippedCount);
+                log.info("Field processing complete - Total: {}, Added: {}, Skipped: {} (inaccessible: {}, compound: {}, missing data: {})", 
+                    fieldsArray.size(), fields.size(), skippedCount, inaccessibleCount, compoundCount, missingDataCount);
+            } else {
+                log.warn("No fields array found in describe response for {}", objectName);
             }
             
             // Log field count for debugging
