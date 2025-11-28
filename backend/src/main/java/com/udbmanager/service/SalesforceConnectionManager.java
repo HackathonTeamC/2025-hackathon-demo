@@ -71,6 +71,15 @@ public class SalesforceConnectionManager {
                 );
             }
             
+            // Debug log (mask sensitive data)
+            log.info("Salesforce OAuth attempt - URL: {}, Username: {}, ClientID prefix: {}..., Password length: {}, ClientSecret length: {}", 
+                loginUrl, 
+                dbConnection.getUsername(), 
+                clientId.length() > 10 ? clientId.substring(0, 10) : clientId,
+                decryptedPassword != null ? decryptedPassword.length() : 0,
+                clientSecret != null ? clientSecret.length() : 0
+            );
+            
             // OAuth 2.0 Username-Password flow
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
             formData.add("grant_type", "password");
