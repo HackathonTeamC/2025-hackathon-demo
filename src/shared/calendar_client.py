@@ -115,18 +115,20 @@ class CalendarClient:
             },
         }
         
-        # 参加者情報をdescriptionに含める
+        # 共有カレンダーの場合は参加者を招待できる
         if attendees:
-            attendee_list = '\n'.join([f"- {email}" for email in attendees if email])
-            description = f"{description}\n\n参加者:\n{attendee_list}\n\n※カレンダーに手動で追加してください。"
-
+            event['attendees'] = [{'email': email} for email in attendees if email]
+            event['guestsCanModify'] = False
+            event['guestsCanInviteOthers'] = False
+            event['guestsCanSeeOtherGuests'] = True
         
         try:
             # サービスアカウントは招待メールを送れないため、sendUpdates='none'にする
+            # ただし、参加者はイベントに追加されるため、カレンダーで確認可能
             created_event = self.service.events().insert(
                 calendarId=self.calendar_id,
                 body=event,
-                sendUpdates='none'  # ✅ 'all' → 'none' に変更
+                sendUpdates='none'  # メール送信はしないが、参加者は追加される
             ).execute()
             
             return {
@@ -137,6 +139,26 @@ class CalendarClient:
                 'end': created_event['end'].get('dateTime', '')
             }
         except HttpError as error:
+            # 403エラーが発生した場合は、参加者なしで再試行
+            if 'forbiddenForServiceAccounts' in str(error) and attendees:
+                # 参加者情報をdescriptionに含めるフォールバック
+                attendee_list = '\n'.join([f"- {email}" for email in attendees if email])
+                event['description'] = f"{description}\n\n参加者:\n{attendee_list}\n\n※カレンダーに手動で追加してください。"
+                del event['attendees']
+                
+                created_event = self.service.events().insert(
+                    calendarId=self.calendar_id,
+                    body=event,
+                    sendUpdates='none'
+                ).execute()
+                
+                return {
+                    'id': created_event['id'],
+                    'html_link': created_event.get('htmlLink', ''),
+                    'summary': created_event.get('summary', ''),
+                    'start': created_event['start'].get('dateTime', ''),
+                    'end': created_event['end'].get('dateTime', '')
+                }
             raise Exception(f"Failed to create event: {error}")
     
     def update_event(
