@@ -9,7 +9,11 @@ import {
   CircularProgress,
   Alert,
   TextField,
-  InputAdornment
+  InputAdornment,
+  FormControl,
+  Select,
+  MenuItem,
+  InputLabel
 } from '@mui/material';
 import { Search, TableChart } from '@mui/icons-material';
 import { TableInfo } from '../../types';
@@ -27,17 +31,36 @@ const TableList: React.FC<TableListProps> = ({ connectionId, onSelectTable }) =>
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTableName, setSelectedTableName] = useState<string>('');
+  const [selectedSchema, setSelectedSchema] = useState<string>('all');
+  const [schemas, setSchemas] = useState<string[]>([]);
 
   useEffect(() => {
     loadTables();
   }, [connectionId]);
 
   useEffect(() => {
-    const filtered = tables.filter((table) =>
-      table.tableName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Extract unique schemas
+    const uniqueSchemas = Array.from(new Set(tables.map(t => t.schemaName).filter(s => s)));
+    setSchemas(uniqueSchemas);
+  }, [tables]);
+
+  useEffect(() => {
+    let filtered = tables;
+    
+    // Filter by schema
+    if (selectedSchema !== 'all') {
+      filtered = filtered.filter((table) => table.schemaName === selectedSchema);
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter((table) =>
+        table.tableName.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
     setFilteredTables(filtered);
-  }, [searchQuery, tables]);
+  }, [searchQuery, tables, selectedSchema]);
 
   const loadTables = async () => {
     setLoading(true);
@@ -78,6 +101,23 @@ const TableList: React.FC<TableListProps> = ({ connectionId, onSelectTable }) =>
   return (
     <Box>
       <Box p={2}>
+        {schemas.length > 0 && (
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel>Schema</InputLabel>
+            <Select
+              value={selectedSchema}
+              label="Schema"
+              onChange={(e) => setSelectedSchema(e.target.value)}
+            >
+              <MenuItem value="all">All Schemas</MenuItem>
+              {schemas.map((schema) => (
+                <MenuItem key={schema} value={schema}>
+                  {schema}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <TextField
           fullWidth
           size="small"
