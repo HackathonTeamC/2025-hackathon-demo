@@ -45,26 +45,29 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* App Bar */}
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar>
+        <Toolbar variant="dense">
           <IconButton
             edge="start"
             color="inherit"
             onClick={onBack}
-            sx={{ mr: 2 }}
+            sx={{ mr: 1 }}
+            size="small"
           >
             <ArrowBack />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            UDB Manager - {connection.connectionName}
+          <Typography variant="subtitle1" component="div" noWrap sx={{ flexGrow: 1, fontWeight: 500 }}>
+            {connection.connectionName}
           </Typography>
           <Chip
             label={connection.databaseType}
             size="small"
             color="secondary"
-            sx={{ mr: 2 }}
+            sx={{ mr: 1, height: 24 }}
           />
-          <Typography variant="body2" color="inherit">
-            {connection.host}:{connection.port}/{connection.databaseName}
+          <Typography variant="caption" color="inherit" noWrap sx={{ maxWidth: 300 }}>
+            {connection.host}
+            {connection.port ? `:${connection.port}` : ''}
+            {connection.databaseName ? `/${connection.databaseName}` : ''}
           </Typography>
         </Toolbar>
       </AppBar>
@@ -80,13 +83,13 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
           '& .MuiDrawer-paper': {
             width: 300,
             boxSizing: 'border-box',
-            mt: '64px'
+            mt: '48px'
           }
         }}
       >
         <Box>
-          <Box p={2} display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">Tables</Typography>
+          <Box px={2} py={1} display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="subtitle1" fontWeight="bold">Tables</Typography>
             <IconButton size="small" onClick={toggleDrawer}>
               <MenuIcon />
             </IconButton>
@@ -101,8 +104,8 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
-          mt: '64px',
+          p: 2,
+          mt: '48px',
           width: drawerOpen ? `calc(100% - 300px)` : '100%',
           ml: drawerOpen ? '300px' : 0,
           transition: (theme) =>
@@ -113,12 +116,12 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
         }}
       >
         {!drawerOpen && (
-          <IconButton onClick={toggleDrawer} sx={{ mb: 2 }}>
+          <IconButton onClick={toggleDrawer} sx={{ mb: 1 }} size="small">
             <MenuIcon />
           </IconButton>
         )}
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
           <Tabs value={activeTab} onChange={handleTabChange}>
             <Tab label="Table Structure" />
             <Tab label="Data" disabled={!selectedTable} />
