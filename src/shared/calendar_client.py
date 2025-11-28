@@ -119,10 +119,8 @@ class CalendarClient:
             # Google Meetをイベント作成時に設定
             'conferenceData': {
                 'createRequest': {
-                    'requestId': str(uuid.uuid4()),
-                    'conferenceSolutionKey': {
-                        'type': 'hangoutsMeet'
-                    }
+                    'requestId': str(uuid.uuid4())
+                    # conferenceSolutionKeyは省略（デフォルトでGoogle Meetが使用される）
                 }
             }
         }
