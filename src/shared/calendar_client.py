@@ -121,7 +121,7 @@ class CalendarClient:
                 'createRequest': {
                     'requestId': str(uuid.uuid4()),
                     'conferenceSolutionKey': {
-                        'type': 'hangoutsMeet'  # これがGoogle Meetを指定するコード
+                        'type': 'hangoutsMeet'
                     }
                 }
             }
