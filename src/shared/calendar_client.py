@@ -200,6 +200,11 @@ class CalendarClient:
                             meet_link = entry_point.get('uri')
                             break
                 
+                # デバッグ: フォールバック処理後のMeetリンク確認
+                print(f"Fallback - Meet link: {meet_link}")
+                print(f"Fallback - conferenceData in response: {'conferenceData' in created_event}")
+                print(f"Fallback - hangoutLink in response: {'hangoutLink' in created_event}")
+                
                 return {
                     'id': created_event['id'],
                     'html_link': created_event.get('htmlLink', ''),
