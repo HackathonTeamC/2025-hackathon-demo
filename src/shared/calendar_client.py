@@ -189,6 +189,10 @@ class CalendarClient:
                     conferenceDataVersion=1
                 ).execute()
                 
+                # デバッグ: リクエストとレスポンスの内容を確認
+                print(f"Fallback - Request event body: {json.dumps(event, indent=2, ensure_ascii=False)}")
+                print(f"Fallback - Response created_event: {json.dumps(created_event, indent=2, ensure_ascii=False, default=str)}")
+                
                 # Meetリンクを取得
                 meet_link = None
                 if 'hangoutLink' in created_event:
