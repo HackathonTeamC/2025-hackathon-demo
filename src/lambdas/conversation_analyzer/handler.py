@@ -113,7 +113,7 @@ def analyze_channel_history(
         
         # チャンネル履歴を取得
         messages = slack.get_channel_history(
-            channel_id=channel_id,
+            channel=channel_id,  # ✅ 'channel_id' → 'channel' に変更
             oldest=str(oldest_ts),
             limit=1000
         )
