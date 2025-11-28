@@ -45,30 +45,36 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* App Bar */}
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-        <Toolbar variant="dense">
+        <Toolbar variant="dense" sx={{ minHeight: 40, height: 40 }}>
           <IconButton
             edge="start"
             color="inherit"
             onClick={onBack}
-            sx={{ mr: 1 }}
+            sx={{ mr: 0.5, p: 0.5 }}
             size="small"
           >
-            <ArrowBack />
+            <ArrowBack fontSize="small" />
           </IconButton>
-          <Typography variant="subtitle1" component="div" noWrap sx={{ flexGrow: 1, fontWeight: 500 }}>
+          <Typography 
+            variant="body2" 
+            component="div" 
+            noWrap 
+            sx={{ 
+              fontWeight: 500,
+              maxWidth: { xs: 150, sm: 250, md: 400 },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}
+            title={connection.connectionName}
+          >
             {connection.connectionName}
           </Typography>
           <Chip
             label={connection.databaseType}
             size="small"
             color="secondary"
-            sx={{ mr: 1, height: 24 }}
+            sx={{ ml: 1, height: 20, fontSize: '0.7rem' }}
           />
-          <Typography variant="caption" color="inherit" noWrap sx={{ maxWidth: 300 }}>
-            {connection.host}
-            {connection.port ? `:${connection.port}` : ''}
-            {connection.databaseName ? `/${connection.databaseName}` : ''}
-          </Typography>
         </Toolbar>
       </AppBar>
 
@@ -83,7 +89,7 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
           '& .MuiDrawer-paper': {
             width: 300,
             boxSizing: 'border-box',
-            mt: '48px'
+            mt: '40px'
           }
         }}
       >
@@ -105,7 +111,7 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
         sx={{
           flexGrow: 1,
           p: 2,
-          mt: '48px',
+          mt: '40px',
           width: drawerOpen ? `calc(100% - 300px)` : '100%',
           ml: drawerOpen ? '300px' : 0,
           transition: (theme) =>
