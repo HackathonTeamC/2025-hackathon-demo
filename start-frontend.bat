@@ -1,6 +1,6 @@
 @echo off
 echo Installing dependencies...
 cd frontend
-call npm install
+call npm install --legacy-peer-deps
 echo Starting UDB Manager Frontend...
 call npm start
