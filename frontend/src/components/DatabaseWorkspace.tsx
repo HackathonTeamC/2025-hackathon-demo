@@ -18,6 +18,7 @@ import ColumnList from './metadata/ColumnList';
 import DataGrid from './data/DataGrid';
 import SqlEditor from './sql/SqlEditor';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 interface DatabaseWorkspaceProps {
   connection: ConnectionResponse;
@@ -25,6 +26,7 @@ interface DatabaseWorkspaceProps {
 }
 
 const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBack }) => {
+  const { t } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [selectedTable, setSelectedTable] = useState<TableInfo | null>(null);
   const [activeTab, setActiveTab] = useState(0);
@@ -110,7 +112,7 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
       >
         <Box>
           <Box px={2} py={1.5} display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6" fontWeight="600">Tables</Typography>
+            <Typography variant="h6" fontWeight="600">{t('workspace.tables')}</Typography>
             <IconButton size="small" onClick={toggleDrawer}>
               <MenuIcon />
             </IconButton>
@@ -144,9 +146,9 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
 
         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
           <Tabs value={activeTab} onChange={handleTabChange}>
-            <Tab label="Table Structure" />
-            <Tab label="Data" disabled={!selectedTable} />
-            <Tab label="SQL Editor" />
+            <Tab label={t('workspace.tableStructure')} />
+            <Tab label={t('workspace.data')} disabled={!selectedTable} />
+            <Tab label={t('workspace.sqlEditor')} />
           </Tabs>
         </Box>
 
@@ -158,7 +160,7 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
         {activeTab === 0 && !selectedTable && (
           <Box textAlign="center" py={8}>
             <Typography variant="h6" color="textSecondary">
-              Select a table from the left sidebar
+              {t('workspace.selectTable')}
             </Typography>
           </Box>
         )}
