@@ -40,7 +40,13 @@ const TableList: React.FC<TableListProps> = ({ connectionId, onSelectTable }) =>
 
   useEffect(() => {
     // Extract unique schemas
-    const uniqueSchemas = Array.from(new Set(tables.map(t => t.schemaName).filter(s => s)));
+    const uniqueSchemas = Array.from(
+      new Set(
+        tables
+          .map(t => t.schemaName)
+          .filter((s): s is string => s !== null && s !== undefined)
+      )
+    );
     setSchemas(uniqueSchemas);
   }, [tables]);
 
