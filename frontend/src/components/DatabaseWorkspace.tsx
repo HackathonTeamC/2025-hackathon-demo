@@ -82,9 +82,10 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
               opacity: 0.9
             }}
           >
-            {connection.host}
-            {connection.port ? `:${connection.port}` : ''}
-            {connection.databaseName ? ` / ${connection.databaseName}` : ''}
+            {connection.databaseType === 'SALESFORCE'
+              ? connection.host
+              : `${connection.host}${connection.port ? ':' + connection.port : ''}${connection.databaseName ? ' / ' + connection.databaseName : ''}`
+            }
           </Typography>
           <LanguageSwitcher />
         </Toolbar>
