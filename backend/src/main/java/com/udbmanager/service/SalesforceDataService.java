@@ -35,8 +35,38 @@ public class SalesforceDataService {
             SalesforceConnectionManager.SalesforceSession session = 
                     salesforceConnectionManager.getSession(dbConnection, decryptedPassword);
             
-            // Build SOQL query - use specific fields instead of FIELDS(ALL)
-            StringBuilder soql = new StringBuilder("SELECT Id, Name FROM ");
+            // Get object metadata to determine available fields
+            JsonNode objectDescribe = salesforceConnectionManager.describeSObject(session, objectName);
+            
+            // Check if object is queryable
+            if (!objectDescribe.get("queryable").asBoolean()) {
+                throw new DatabaseConnectionException("Object " + objectName + " is not queryable");
+            }
+            
+            // Build field list from describe (limit to first 20 fields for performance)
+            List<String> fields = new ArrayList<>();
+            fields.add("Id"); // Always include Id
+            
+            JsonNode fieldsArray = objectDescribe.get("fields");
+            if (fieldsArray != null && fieldsArray.isArray()) {
+                for (JsonNode field : fieldsArray) {
+                    if (fields.size() >= 20) break; // Limit fields
+                    
+                    String fieldName = field.get("name").asText();
+                    boolean isAccessible = field.get("accessible").asBoolean();
+                    boolean isCompound = field.has("compoundFieldName") && !field.get("compoundFieldName").isNull();
+                    
+                    // Include accessible, non-compound fields
+                    if (isAccessible && !isCompound && !fieldName.equals("Id")) {
+                        fields.add(fieldName);
+                    }
+                }
+            }
+            
+            // Build SOQL query
+            StringBuilder soql = new StringBuilder("SELECT ");
+            soql.append(String.join(", ", fields));
+            soql.append(" FROM ");
             soql.append(objectName);
             
             // Add WHERE clause for filters
