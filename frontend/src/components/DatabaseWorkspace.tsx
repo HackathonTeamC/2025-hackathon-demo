@@ -122,7 +122,7 @@ const DatabaseWorkspace: React.FC<DatabaseWorkspaceProps> = ({ connection, onBac
         component="main"
         sx={{
           flexGrow: 1,
-          p: 2,
+          p: 1,
           mt: '48px',
           width: drawerOpen ? `calc(100% - 300px)` : '100%',
           ml: drawerOpen ? '300px' : 0,
