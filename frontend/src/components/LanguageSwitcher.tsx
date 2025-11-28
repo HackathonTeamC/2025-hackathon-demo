@@ -28,7 +28,7 @@ const LanguageSwitcher: React.FC = () => {
             }
           }}
         >
-          <MenuItem value="en">EN</MenuItem>
+          <MenuItem value="en">English</MenuItem>
           <MenuItem value="ja">日本語</MenuItem>
           <MenuItem value="zh">中文</MenuItem>
         </Select>
