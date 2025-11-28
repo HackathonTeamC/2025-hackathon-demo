@@ -38,8 +38,14 @@ public class SalesforceDataService {
             // Get object metadata to determine available fields
             JsonNode objectDescribe = salesforceConnectionManager.describeSObject(session, objectName);
             
+            // Check if describe succeeded
+            if (objectDescribe == null) {
+                throw new DatabaseConnectionException("Failed to describe object: " + objectName);
+            }
+            
             // Check if object is queryable
-            if (!objectDescribe.get("queryable").asBoolean()) {
+            JsonNode queryableNode = objectDescribe.get("queryable");
+            if (queryableNode != null && !queryableNode.asBoolean()) {
                 throw new DatabaseConnectionException("Object " + objectName + " is not queryable");
             }
             
@@ -52,8 +58,15 @@ public class SalesforceDataService {
                 for (JsonNode field : fieldsArray) {
                     if (fields.size() >= 20) break; // Limit fields
                     
-                    String fieldName = field.get("name").asText();
-                    boolean isAccessible = field.get("accessible").asBoolean();
+                    JsonNode nameNode = field.get("name");
+                    JsonNode accessibleNode = field.get("accessible");
+                    
+                    if (nameNode == null || accessibleNode == null) {
+                        continue; // Skip fields without name or accessible info
+                    }
+                    
+                    String fieldName = nameNode.asText();
+                    boolean isAccessible = accessibleNode.asBoolean();
                     boolean isCompound = field.has("compoundFieldName") && !field.get("compoundFieldName").isNull();
                     
                     // Include accessible, non-compound fields
